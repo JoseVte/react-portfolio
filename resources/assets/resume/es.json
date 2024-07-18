@@ -1,0 +1,201 @@
+{
+    "$schema": "https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json",
+    "basics": {
+        "name": "Jose Vicente Orts Romero",
+        "label": "Full-Stack Developer",
+        "image": "",
+        "email": "jvortsromero@gmail.com",
+        "phone": "",
+        "url": "",
+        "summary": "",
+        "location": {
+            "countryCode": "ES",
+            "address": ""
+        },
+        "profiles": [
+            {
+                "network": "LinkedIn",
+                "username": "jose-vicente-orts-romero-93aa9990",
+                "url": "https://www.linkedin.com/in/jose-vicente-orts-romero-93aa9990/"
+            }
+        ]
+    },
+    "work": [
+        {
+            "name": "Square1",
+            "position": "Ingeniero de software superior",
+            "startDate": "2023-05-31",
+            "endDate": "",
+            "highlights": [],
+            "url": "https://www.linkedin.com/company/square1-ltd/",
+            "location": "Alicante, Comunidad Valenciana / Comunitat Valenciana, España"
+        },
+        {
+            "name": "Square1",
+            "position": "Ingeniero de software",
+            "startDate": "2019-01-31",
+            "endDate": "2023-04-30",
+            "highlights": [],
+            "url": "https://www.linkedin.com/company/square1-ltd/",
+            "location": "Alicante, Comunidad Valenciana / Comunitat Valenciana, España"
+        },
+        {
+            "name": "Square1",
+            "position": "Ingeniero de software júnior",
+            "startDate": "2016-01-31",
+            "endDate": "2018-12-31",
+            "highlights": [],
+            "url": "https://www.linkedin.com/company/square1-ltd/",
+            "location": "Alicante, Comunidad Valenciana / Comunitat Valenciana, España"
+        },
+        {
+            "name": "Square1",
+            "position": "Becario",
+            "startDate": "2015-08-31",
+            "endDate": "2015-12-31",
+            "highlights": [],
+            "url": "https://www.linkedin.com/company/square1-ltd/",
+            "location": "Alicante, Comunidad Valenciana / Comunitat Valenciana, España"
+        }
+    ],
+    "volunteer": [],
+    "education": [
+        {
+            "institution": "Universitat d'Alacant",
+            "area": "Ingeniería informática",
+            "studyType": "Grado en Ingeniería",
+            "startDate": "2011-12-31",
+            "endDate": "2016-12-31",
+            "score": "",
+            "courses": []
+        }
+    ],
+    "awards": [],
+    "certificates": [
+        {
+            "name": "Stripe Certified Professional Developer",
+            "issuer": "Stripe",
+            "endDate": "2025-05-31",
+            "startDate": "2023-05-31",
+            "url": "https://stripecertifications.credential.net/78b6d35c-3aa6-4622-8548-e83e90420b14"
+        }
+    ],
+    "publications": [],
+    "skills": [
+        {
+            "name": "MySQL",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "CSS",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "SQL",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "Desarrollo web",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "jQuery",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "JavaScript",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "Microsoft Windows",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "HTML5",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "Java",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "Hojas de estilos en cascada (CSS)",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "PHP",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "C++",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "Laravel",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "HTML",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "Linux",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "Git",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "PHPUnit",
+            "level": "",
+            "keywords": []
+        },
+        {
+            "name": "Square1",
+            "level": "",
+            "keywords": []
+        }
+    ],
+    "languages": [
+        {
+            "language": "es",
+            "fluency": "Native Speaker"
+        },
+        {
+            "fluency": "Professional Working",
+            "language": "Catalán"
+        },
+        {
+            "fluency": "Native Speaker",
+            "language": "Español"
+        },
+        {
+            "fluency": "Professional Working",
+            "language": "Inglés"
+        }
+    ],
+    "interests": [],
+    "references": [],
+    "projects": [],
+    "meta": {
+        "version": "v1.0.0",
+        "canonical": "https://github.com/jsonresume/resume-schema/blob/v1.0.0/schema.json"
+    }
+}
