@@ -1,5 +1,4 @@
 import {Link, Head} from '@inertiajs/react';
-import {PageProps} from '@/types';
 import DefaultLayout from "@/Layouts/DefaultLayout";
 import Container from "@/Components/Container";
 import {useTranslation} from "react-i18next";
@@ -11,10 +10,7 @@ import Photos from "@/Components/Sections/Photos";
 import Projects from "@/Components/Sections/Projects";
 import Work from "@/Components/Sections/Work";
 
-export default function Homepage({auth, laravelVersion, phpVersion}: PageProps<{
-    laravelVersion: string,
-    phpVersion: string
-}>) {
+export default function Homepage() {
     const {t} = useTranslation();
 
     const title = t('layouts.title')

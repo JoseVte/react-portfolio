@@ -12,7 +12,7 @@ export default function Photos() {
     const [loaded, setLoaded] = useState(false);
 
     const getImages = async (type: string): Promise<Array<Image>> => {
-        return await (await fetch('/api/assets/' + type)).json();
+        return await (await fetch(route('assets.show', type))).json();
     };
 
     if (!loaded) {
@@ -22,7 +22,7 @@ export default function Photos() {
             getImages('mountain'),
             getImages('other'),
             getImages('travel'),
-        ]).then(response => {
+        ]).then((response) => {
             setImages(_.sampleSize(response[0].concat(response[1], response[2], response[3]), 5));
         })
     }

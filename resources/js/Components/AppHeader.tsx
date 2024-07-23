@@ -113,8 +113,11 @@ export default function AppHeader({isHomePage, navLinks}: Readonly<{ isHomePage:
         updateStyles()
     })
 
-    window.addEventListener('scroll', updateStyles, {passive: true})
-    window.addEventListener('resize', updateStyles)
+    const isServer = typeof window === 'undefined'
+    if (!isServer) {
+        window.addEventListener('scroll', updateStyles, {passive: true})
+        window.addEventListener('resize', updateStyles)
+    }
 
     return (
         <>
