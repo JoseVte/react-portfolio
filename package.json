@@ -35,6 +35,8 @@
         "i18next-fluent": "^2.0.0",
         "i18next-http-backend": "^2.5.2",
         "lodash": "^4.17.21",
+        "react-cookie-consent": "^9.0.0",
+        "react-ga4": "^2.1.0",
         "react-hot-toast": "^2.4.1",
         "react-i18next": "^15.0.0"
     }

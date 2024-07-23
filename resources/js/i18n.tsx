@@ -16,6 +16,9 @@ const messages = {
             'layouts.projects.title': 'Projects - Jose Vicente',
             'layouts.projects.description': 'Things I’ve made trying to put my dent in the universe.',
 
+            'layouts.admin.title': 'Admin - Jose Vicente',
+            'layouts.admin.description': 'Admin - Jose Vicente',
+
             'nav.about': 'About',
             'nav.projects': 'Projects',
             'nav.menu': 'Menu',
@@ -42,6 +45,10 @@ const messages = {
             'about.paragraph-3': 'I am always seeking continuous learning and stay updated on the latest trends and advancements in the field of technology. I am passionate about exploring new technologies and finding innovative ways to enhance my skills.',
 
             'projects.description': 'I’ve worked on tons of little projects over the years but these are the ones that I’m most proud of. Many of them are open-source, so if you see something that piques your interest, check out the code and contribute if you have ideas for how it can be improved.',
+
+            'cookie-consent.accept': 'Accept',
+            'cookie-consent.decline': 'Decline',
+            'cookie-consent.text': 'This website uses cookies to enhance the user experience.',
         }
     },
     es: {
@@ -55,6 +62,9 @@ const messages = {
 
             'layouts.projects.title': 'Proyectos - Jose Vicente',
             'layouts.projects.description': 'Cosas que he hecho tratando de hacer mella en el universo.',
+
+            'layouts.admin.title': 'Admin - Jose Vicente',
+            'layouts.admin.description': 'Admin - Jose Vicente',
 
             'nav.about': 'Acerca de',
             'nav.projects': 'Proyectos',
@@ -82,6 +92,10 @@ const messages = {
             'about.paragraph-3': 'Siempre busco el aprendizaje continuo y mantenerme actualizado sobre las últimas tendencias y avances en el campo de la tecnología. Me apasiona explorar nuevas tecnologías y encontrar formas innovadoras de mejorar mis habilidades.',
 
             'projects.description': 'He trabajado en toneladas de pequeños proyectos a lo largo de los años, pero estos son de los que estoy más orgulloso. Muchos de ellos son de código abierto, por lo que si ve algo que despierta su interés, consulte el código y contribuya si tiene ideas sobre cómo se puede mejorar.',
+
+            'cookie-consent.accept': 'Aceptar',
+            'cookie-consent.decline': 'Declinar',
+            'cookie-consent.text': 'Este sitio usa cookies para mejorar la experiencia de usuario.',
         }
     }
 }
@@ -97,7 +111,8 @@ i18next
         fallbackLng: ['es', 'en'],
         interpolation: {
             escapeValue: false,
-        }
+        },
+        saveMissing: true
     });
 
 export default i18next;

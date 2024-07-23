@@ -10,6 +10,8 @@ import ModeToggle from "@/Components/ModeToggle";
 export default function AppHeader({isHomePage, navLinks}: Readonly<{ isHomePage: boolean, navLinks: object }>) {
     const {t, i18n} = useTranslation();
 
+    const [eventsInitialized, setEventsInitialized] = useState(true);
+
     const currentPage = usePage().url;
     const headerRef = useRef<HTMLDivElement>(null);
 
@@ -111,13 +113,13 @@ export default function AppHeader({isHomePage, navLinks}: Readonly<{ isHomePage:
 
     useEffect(() => {
         updateStyles()
-    })
 
-    const isServer = typeof window === 'undefined'
-    if (!isServer) {
-        window.addEventListener('scroll', updateStyles, {passive: true})
-        window.addEventListener('resize', updateStyles)
-    }
+        if (!eventsInitialized) {
+            setEventsInitialized(true)
+            window.addEventListener('scroll', updateStyles, {passive: true})
+            window.addEventListener('resize', updateStyles)
+        }
+    })
 
     return (
         <>

@@ -1,9 +1,13 @@
 import Container from "@/Components/Container";
 import {Link} from "@inertiajs/react";
 import {useTranslation} from "react-i18next";
+import {useEffect, useState} from "react";
 
 export default function AppFooter({navLinks}: Readonly<{ navLinks: object }>) {
     const {t} = useTranslation();
+
+    const [isServer, setIsServer] = useState(true);
+    useEffect(() => setIsServer(true), []);
 
     return (
         <footer className="mt-32">
@@ -24,7 +28,7 @@ export default function AppFooter({navLinks}: Readonly<{ navLinks: object }>) {
                             ))}
                         </div>
                         <p className="text-sm text-zinc-400 dark:text-zinc-500">
-                            &copy; {new Date().getFullYear()} Josrom. {t('footer.copy')}
+                            &copy; {isServer ? '' : new Date().getFullYear()} Josrom. {t('footer.copy')}
                         </p>
                     </div>
                 </div>

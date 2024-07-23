@@ -3,6 +3,7 @@
         "allowJs": true,
         "module": "ESNext",
         "moduleResolution": "node",
+        "skipLibCheck": true,
         "jsx": "react-jsx",
         "strict": true,
         "isolatedModules": true,
