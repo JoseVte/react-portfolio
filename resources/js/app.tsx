@@ -1,28 +1,31 @@
-import './bootstrap';
 import '../css/app.css';
 
-import { createRoot, hydrateRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import './i18n'
+import { createRoot } from 'react-dom/client';
+import { initializeTheme } from './hooks/use-appearance';
 
-import * as Sentry from "@sentry/react";
+import './i18n';
+
+import * as Sentry from '@sentry/react';
 Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN_PUBLIC,
 });
 
-createInertiaApp({
-    title: (title) => `${title}`,
-    resolve: (name) => resolvePageComponent(`./Pages/${name}.tsx`, import.meta.glob('./Pages/**/*.tsx')),
-    setup({ el, App, props }) {
-        if (import.meta.env.DEV) {
-            createRoot(el).render(<App {...props} />);
-            return
-        }
+const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
-        hydrateRoot(el, <App {...props} />);
+createInertiaApp({
+    title: (title) => `${title} - ${appName}`,
+    resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
+    setup({ el, App, props }) {
+        const root = createRoot(el);
+
+        root.render(<App {...props} />);
     },
     progress: {
         color: '#4B5563',
     },
 });
+
+// This will set light / dark mode on load...
+initializeTheme();

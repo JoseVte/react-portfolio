@@ -26,7 +26,7 @@ class Image extends Model
         'category' => ImageCategory::class,
     ];
 
-    public function getUrlAttribute()
+    public function getUrlAttribute(): string
     {
         return app('url')->asset('images/'.$this->path);
     }

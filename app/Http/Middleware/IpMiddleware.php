@@ -11,11 +11,13 @@ class IpMiddleware
     /**
      * Handle an incoming request.
      *
+     * @param Request $request
+     * @param Closure $next
      * @return mixed
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): mixed
     {
-        $allowedIps = array_map('trim', explode(',', env('ALLOWED_IPS')));
+        $allowedIps = array_map('trim', explode(',', config('app.allowed-ips')));
 
         $checkIp = false;
         foreach ($request->getClientIps() as $ip) {

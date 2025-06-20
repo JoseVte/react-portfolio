@@ -32,8 +32,10 @@ return [
 
         'local' => [
             'driver' => 'local',
-            'root' => storage_path('app'),
+            'root' => storage_path('app/private'),
+            'serve' => true,
             'throw' => false,
+            'report' => false,
         ],
 
         'public' => [
@@ -42,6 +44,7 @@ return [
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
             'throw' => false,
+            'report' => false,
         ],
 
         's3' => [
@@ -54,6 +57,7 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
+            'report' => false,
         ],
 
         'backblaze' => [
@@ -66,6 +70,21 @@ return [
             'url' => env('B3_URL'),
             'use_path_style_endpoint' => env('B3_USE_PATH_STYLE_ENDPOINT', true),
             'throw' => true,
+            'visibility' => 'private',
+            'checksum' => false,
+            'options' => [
+                'checksum_algorithm' => '',
+                'http' => [
+                    'headers' => [
+                        'x-amz-checksum-crc32' => null,
+                        'x-amz-checksum-crc32c' => null,
+                        'x-amz-checksum-sha1' => null,
+                        'x-amz-checksum-sha256' => null,
+                        'x-amz-checksum-algorithm' => null,
+                        'x-amz-checksum-mode' => null,
+                    ],
+                ],
+            ],
         ],
 
     ],

@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'github' => [
+        'token' => env('GITHUB_OAUTH_TOKEN'),
+    ],
+
 ];

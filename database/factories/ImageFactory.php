@@ -5,8 +5,9 @@ namespace Database\Factories;
 use App\Enums\ImageCategory;
 use App\Models\Image;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
+use League\Flysystem\FilesystemException;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 
 class ImageFactory extends Factory
 {
@@ -19,12 +20,11 @@ class ImageFactory extends Factory
 
     /**
      * Define the model's default state.
-     *
-     * @return array
+     * @throws FilesystemException
      */
-    public function definition()
+    public function definition(): array
     {
-        $adapter = new Filesystem(new Local(
+        $adapter = new Filesystem(new LocalFilesystemAdapter(
             base_path('public/images')
         ));
 
@@ -32,7 +32,7 @@ class ImageFactory extends Factory
         $category = $this->faker->randomElement(ImageCategory::cases());
         $file = $this->faker->image();
         $filename = $this->faker->slug;
-        $adapter->put($category->value.'/'.$filename.'.png', file_get_contents($file));
+        $adapter->write($category->value.'/'.$filename.'.png', file_get_contents($file));
 
         return [
             'name' => $this->faker->slug,
