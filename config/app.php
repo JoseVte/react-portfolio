@@ -123,5 +123,5 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    'allowed-ips' => env('ALLOWED_IPS')
+    'allowed-ips' => env('ALLOWED_IPS'),
 ];

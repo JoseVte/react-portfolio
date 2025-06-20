@@ -20,6 +20,7 @@ class ImageFactory extends Factory
 
     /**
      * Define the model's default state.
+     *
      * @throws FilesystemException
      */
     public function definition(): array

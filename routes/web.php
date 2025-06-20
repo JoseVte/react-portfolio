@@ -7,28 +7,27 @@ use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'homepage')->name('homepage');
 Route::inertia('about', 'about')->name('about');
-Route::inertia('projects', 'projects')->name('projects');;
+Route::inertia('projects', 'projects')->name('projects');
 
 Route::middleware(IpMiddleware::class)->group(function () {
     include 'admin.php';
 });
 
-Route::get('assets/{image:path}', function (Request $request, Image $image) {
+$handleImageRequest = static function (Request $request, Image $image) {
     if ($request->boolean('preview')) {
         cache()->forget("image-{$image->path}");
     }
 
     return cache()->remember("image-{$image->path}", 60 * 60 * 24, function () use ($image) {
-        return Storage::get($image->path);
-    });
-})->name('asset')->where('image', '.*');
+        $response = Response::make(Storage::get($image->path));
+        $response->header('Content-Type', Storage::mimeType($image->path));
+        $response->header('Content-Length', Storage::size($image->path));
+        $response->header('Cache-Control', 'public, max-age=31536000');
 
-Route::get('images/{image:path}', function (Request $request, Image $image) {
-    if ($request->boolean('preview')) {
-        cache()->forget("image-{$image->path}");
-    }
-
-    return cache()->remember("image-{$image->path}", 60 * 60 * 24, function () use ($image) {
-        return Storage::get($image->path);
+        return $response;
     });
-})->name('asset')->where('image', '.*');
+};
+
+Route::get('assets/{image:path}', $handleImageRequest)->name('asset')->where('image', '.*');
+
+Route::get('images/{image:path}', $handleImageRequest)->name('asset')->where('image', '.*');
