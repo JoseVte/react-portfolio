@@ -1,14 +1,14 @@
-import { clamp } from 'lodash';
+import _ from 'lodash';
 import { useEffect, useState } from 'react';
 
 export function useScroll() {
     const [isOnTop, setIsOnTop] = useState<boolean>();
 
     useEffect(() => {
-        const scrollY = clamp(window.scrollY, 0, document.body.scrollHeight - window.innerHeight);
+        const scrollY = _.clamp(window.scrollY, 0, document.body.scrollHeight - window.innerHeight);
 
         const onChange = () => {
-            const scrollY = clamp(window.scrollY, 0, document.body.scrollHeight - window.innerHeight);
+            const scrollY = _.clamp(window.scrollY, 0, document.body.scrollHeight - window.innerHeight);
 
             setIsOnTop(scrollY === 0);
         };
