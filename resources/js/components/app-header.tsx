@@ -67,7 +67,7 @@ export default function AppHeader({
                                 {(!isOnTop || isMobile || !isHomePage) && (
                                     <Fade>
                                         <AvatarContainer className={isOnTop && isMobile ? 'size-16 transition-all' : 'transition-all'}>
-                                            <Avatar large={isOnTop && isMobile} />
+                                            <Avatar large={isOnTop && isMobile} width={64} height={64} forceLoad />
                                         </AvatarContainer>
                                     </Fade>
                                 )}
@@ -158,12 +158,13 @@ export default function AppHeader({
                             <div className="flex items-center justify-end md:flex-1">
                                 <div className="pointer-events-auto flex gap-4">
                                     {availableLocale() && (
-                                        <a
+                                        <button
+                                            type="button"
                                             className="group cursor-pointer rounded-full bg-white/90 px-3 py-2 text-zinc-800 capitalize shadow-lg ring-1 shadow-zinc-800/5 ring-zinc-900/5 backdrop-blur transition dark:bg-zinc-800/90 dark:text-zinc-200 dark:ring-white/10 dark:hover:ring-white/20"
                                             onClick={() => i18n.changeLanguage(availableLocale())}
                                         >
                                             {availableLocale()}
-                                        </a>
+                                        </button>
                                     )}
                                     <ModeToggle appearance={appearance} updateAppearance={updateAppearance} />
                                 </div>

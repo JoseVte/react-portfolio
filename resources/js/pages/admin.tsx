@@ -60,6 +60,7 @@ export default function Admin() {
         <DefaultLayout>
             <Head title={title}>
                 <meta head-key="description" name="description" content={description} />
+                <meta name="robots" content="noindex, nofollow" />
             </Head>
 
             <Container className="mt-16 sm:mt-32">

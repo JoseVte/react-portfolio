@@ -6,6 +6,7 @@ import { initReactI18next } from 'react-i18next';
 const messages = {
     en: {
         translation: {
+            'layouts.seo-title': 'Jose Vicente - Web developer',
             'layouts.title': 'Jose Vicente - Web developer, Hiker, Cat Lover and Board/Card Game Enjoyer.',
             'layouts.description':
                 'I’m Jose Vicente, a web developer with extensive experience in design, development, and deployment of web applications.',
@@ -82,10 +83,13 @@ const messages = {
 
             'calendar.tooltip': '{{count}} activities on {{date}}',
             'calendar.total': '{{count}} activities in {{year}}',
+
+            'button.change-appearance': 'Change appearance',
         },
     },
     es: {
         translation: {
+            'layouts.seo-title': 'Jose Vicente - Desarrollador web',
             'layouts.title': 'Jose Vicente - Desarrollador web, Montañero, Amante de gatos y Juegos de Mesa/Cartas Enjoyer.',
             'layouts.description':
                 'Soy Jose Vicente, un desarrollador web con una extensa experiencia en el diseño, desarrollo y despliegue de aplicaciones web.',
@@ -159,6 +163,8 @@ const messages = {
 
             'calendar.tooltip': '{{count}} actividades en {{date}}',
             'calendar.total': '{{count}} actividades en {{year}}',
+
+            'button.change-appearance': 'Cambiar apariencia',
         },
     },
 };

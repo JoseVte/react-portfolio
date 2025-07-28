@@ -16,20 +16,29 @@ import { useTranslation } from 'react-i18next';
 export default function Homepage() {
     const { t } = useTranslation();
 
+    const seoTitle = t('layouts.seo-title');
     const title = t('layouts.title');
     const description = t('layouts.description');
     const descriptionExtended = description + ' ' + t('layouts.description-extended');
 
     return (
         <DefaultLayout>
-            <Head title={title} />
+            <Head title={seoTitle}>
+                <meta head-key="description" name="description" content={description} />
+
+                <meta property="og:title" content={seoTitle} />
+                <meta property="og:description" content={description} />
+
+                <meta name="twitter:title" content={title} />
+                <meta name="twitter:description" content={description} />
+            </Head>
 
             <Container className="mt-9">
                 <div className="grid grid-cols-1 items-center gap-y-10 lg:grid-cols-[1fr_300px]">
                     <div className="max-w-2xl">
                         <div className="grid items-center gap-y-10 md:grid-cols-[200px_1fr] lg:grid-cols-1">
                             <AvatarContainer className="m-auto hidden size-36 items-center justify-center transition-all md:flex lg:hidden">
-                                <Avatar maxSize={144} customAvatarClass="h-[125px] w-[125px]" />
+                                <Avatar maxSize={144} customAvatarClass="h-[125px] w-[125px]" width={125} height={125} forceLoad />
                             </AvatarContainer>
                             <h1 className="text-4xl font-bold tracking-tight text-zinc-800 sm:text-5xl dark:text-zinc-100">{title}</h1>
                         </div>
@@ -62,7 +71,7 @@ export default function Homepage() {
                         </div>
                     </div>
                     <AvatarContainer className="m-auto hidden size-60 items-center justify-center transition-all lg:flex">
-                        <Avatar maxSize={256} customAvatarClass="h-[220px] w-[220px]" />
+                        <Avatar maxSize={256} customAvatarClass="h-[220px] w-[220px]" width={220} height={220} forceLoad />
                     </AvatarContainer>
                 </div>
             </Container>

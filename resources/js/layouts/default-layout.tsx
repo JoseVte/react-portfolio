@@ -9,6 +9,7 @@ import { CookieConsent, Cookies, getCookieConsentValue } from 'react-cookie-cons
 import ReactGA from 'react-ga4';
 import { useTranslation } from 'react-i18next';
 import { twMerge } from 'tailwind-merge';
+import { SharedData } from '@/types';
 
 export default function DefaultLayout({
     children,
@@ -20,7 +21,7 @@ export default function DefaultLayout({
         updateAppearance?: (appearance: Appearance) => void;
     }
 >) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const data = useAppearance();
     if (appearance === undefined) {
         appearance = data.appearance;
@@ -52,6 +53,11 @@ export default function DefaultLayout({
             handleAcceptCookie();
         }
     }, []);
+
+    useEffect(() => {
+        document.documentElement.lang = i18n.resolvedLanguage ?? i18n.language;
+    }, [i18n.language, i18n.resolvedLanguage]);
+
 
     const replaceTheme = (classes: string, oldColor: string, newColor: string) => {
         return twMerge(classes, classes.replaceAll(oldColor, newColor));
@@ -133,9 +139,25 @@ export default function DefaultLayout({
     return (
         <>
             <ThemeProvider theme={theme}>
-                <Head title={t('layouts.title')}>
-                    <meta head-key="description" name="description" content={t('layouts.description')}></meta>
+                <Head title={t('layouts.seo-title')}>
+                    <meta head-key="description" name="description" content={t('layouts.description')} />
                     <link rel="icon" type="image/png" href={gravatar.url(import.meta.env.VITE_PUBLIC_EMAIL, { s: '64' })} />
+                    <link rel="canonical" href={usePage<SharedData>().props.ziggy.url} />
+
+                    <meta property="og:title" content={t('layouts.seo-title')} />
+                    <meta property="og:description" content={t('layouts.description')} />
+                    <meta property="og:type" content="website" />
+                    <meta property="og:url" content={usePage().url} />
+                    <meta property="og:image" content={gravatar.url(import.meta.env.VITE_PUBLIC_EMAIL, { s: '1200' })} />
+
+                    <meta name="twitter:card" content="summary_large_image" />
+                    <meta name="twitter:creator" content={import.meta.env.VITE_PUBLIC_TWITTER_USERNAME} />
+                    <meta name="twitter:title" content={t('layouts.seo-title')} />
+                    <meta name="twitter:description" content={t('layouts.description')} />
+                    <meta name="twitter:image" content={gravatar.url(import.meta.env.VITE_PUBLIC_EMAIL, { s: '1200' })} />
+                    <meta name="twitter:image:alt" content={t('layouts.seo-title')} />
+
+                    <meta name="robots" content="index, follow" />
                 </Head>
 
                 <div className="flex h-full flex-col bg-zinc-50 dark:bg-black">

@@ -34,10 +34,14 @@ export default function Photos() {
                                 className={`relative aspect-[9/10] w-44 flex-none overflow-hidden rounded-xl bg-zinc-100 sm:w-72 sm:rounded-2xl dark:bg-zinc-800 ${_.sample(rotations)}`}
                             >
                                 <LazyImg
+                                    width={300}
+                                    height={300}
                                     image={`/assets/${image.path}`}
                                     preImage={`/assets/${image.path}`}
                                     className="absolute inset-0 h-full w-full object-cover"
+                                    forceLoad
                                     alt={t('img-alt.photo', { photo: i + 1 })}
+                                    title={t('img-alt.photo', { photo: i + 1 })}
                                 />
                             </div>
                         ))}

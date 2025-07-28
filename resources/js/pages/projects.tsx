@@ -193,6 +193,12 @@ export default function Projects() {
         <DefaultLayout appearance={appearance} updateAppearance={updateAppearance}>
             <Head title={title}>
                 <meta head-key="description" name="description" content={description} />
+
+                <meta property="og:title" content={title} />
+                <meta property="og:description" content={description} />
+
+                <meta name="twitter:title" content={title} />
+                <meta name="twitter:description" content={description} />
             </Head>
 
             <Container className="mt-16 sm:mt-32">

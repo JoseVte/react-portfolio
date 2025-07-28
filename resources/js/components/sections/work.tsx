@@ -26,6 +26,9 @@ export default function Work() {
                             <div className="size-7 overflow-hidden rounded-full">
                                 <Link href={role.url ?? ''}>
                                     <LazyImg
+                                        width={200}
+                                        height={200}
+                                        title={role.name ?? ''}
                                         image={`/images/logos/${role.name}.jpeg`}
                                         preImage={`/images/logos/${role.name}.jpeg`}
                                         alt={role.name ?? ''}
@@ -42,10 +45,10 @@ export default function Work() {
                                 </Link>
                             </dd>
                             <dt className="sr-only">{t('index.role')}</dt>
-                            <dd className="text-xs text-zinc-500 dark:text-zinc-400">{role.position}</dd>
+                            <dd className="text-xs text-zinc-500 dark:text-zinc-300">{role.position}</dd>
                             <dt className="sr-only">{t('index.date')}</dt>
                             <dd
-                                className="ml-auto text-xs text-zinc-400 dark:text-zinc-500"
+                                className="ml-auto text-xs text-zinc-400"
                                 aria-label={`${role.startDate} until ${role.endDate ? role.endDate : t('index.present')}`}
                             >
                                 <time dateTime={role.startDate}>{role.startDate}</time>

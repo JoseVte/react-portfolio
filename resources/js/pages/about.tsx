@@ -22,6 +22,12 @@ export default function About() {
             <DefaultLayout>
                 <Head title={title}>
                     <meta head-key="description" name="description" content={description} />
+
+                    <meta property="og:title" content={title} />
+                    <meta property="og:description" content={description} />
+
+                    <meta name="twitter:title" content={title} />
+                    <meta name="twitter:description" content={description} />
                 </Head>
 
                 <Container className="mt-16 sm:mt-20 lg:mt-32">
@@ -35,9 +41,13 @@ export default function About() {
                                             translateY: [20, 60],
                                             children: (
                                                 <LazyImg
+                                                    width={667}
+                                                    height={500}
                                                     image="/images/portrait.jpg"
                                                     preImage="/images/portrait-min.jpg"
                                                     alt={t('img-alt.profile')}
+                                                    title={t('img-alt.profile')}
+                                                    forceLoad
                                                     className={`aspect-square rounded-2xl bg-zinc-100 object-cover dark:bg-zinc-800 ${sample(['rotate-3', '-rotate-3', 'rotate-2', '-rotate-2'])}`}
                                                 />
                                             ),

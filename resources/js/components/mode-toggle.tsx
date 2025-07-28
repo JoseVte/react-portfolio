@@ -3,8 +3,10 @@ import Moon from '@/components/icons/moon';
 import Sun from '@/components/icons/sun';
 import { Appearance } from '@/hooks/use-appearance';
 import { Dropdown, DropdownItem } from 'flowbite-react';
+import { useTranslation } from 'react-i18next';
 
 export default function ModeToggle({ appearance, updateAppearance }: { appearance: string; updateAppearance: (appearance: Appearance) => void }) {
+    const { t } = useTranslation();
     const iconClass = 'size-6 fill-zinc-100 dark:fill-zinc-700 group-hover:stroke-yellow-500 cursor-pointer';
 
     const getCurrentIcon = () => {
@@ -20,7 +22,7 @@ export default function ModeToggle({ appearance, updateAppearance }: { appearanc
 
     return (
         <div className="flex cursor-pointer items-center rounded-full bg-white/90 px-3 py-2 shadow-lg ring-1 shadow-zinc-800/5 ring-zinc-900/5 backdrop-blur transition dark:bg-zinc-800/90 dark:ring-white/10 dark:hover:ring-white/20">
-            <Dropdown label={getCurrentIcon()} inline>
+            <Dropdown label={getCurrentIcon()} inline aria-label={t('button.change-appearance')}>
                 <DropdownItem className="group" onClick={() => updateAppearance('light')}>
                     <Sun className={iconClass + ' ' + (appearance === 'light' ? 'stroke-yellow-500' : 'stroke-zinc-500')} />
                 </DropdownItem>

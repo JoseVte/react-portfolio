@@ -8,7 +8,7 @@ export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
-    ziggy: Config & { location: string };
+    ziggy: Config & { location: string; url: string };
     sidebarOpen: boolean;
 
     [key: string]: unknown;

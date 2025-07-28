@@ -5,15 +5,19 @@ export default function LazyImg({
     preImage,
     alt,
     className = '',
+    title = '',
     width = undefined,
     height = undefined,
+    forceLoad = false,
 }: Readonly<{
     image: string;
     preImage: string;
     alt: string;
     className?: string;
+    title?: string;
     width?: number;
     height?: number;
+    forceLoad?: boolean;
 }>) {
     useEffect(() => {
         const imgDefers = document.getElementsByTagName('img');
@@ -25,5 +29,16 @@ export default function LazyImg({
         }
     });
 
-    return <img width={width} height={height} className={className} loading="lazy" data-src={image} src={preImage} alt={alt} />;
+    return (
+        <img
+            width={width}
+            height={height}
+            className={className}
+            loading={forceLoad ? 'eager' : 'lazy'}
+            data-src={image}
+            src={preImage}
+            alt={alt}
+            title={title}
+        />
+    );
 }

@@ -3,7 +3,11 @@
 /node_modules
 /public/build
 /public/hot
+/public/manifest.json
+/public/offline.html
 /public/storage
+/public/sitemap.xml
+/public/sw.js
 /storage/*.key
 /storage/pail
 /vendor

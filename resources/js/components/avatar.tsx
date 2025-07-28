@@ -10,11 +10,17 @@ export default function Avatar({
     customAvatarClass = '',
     maxSize = 64,
     style,
+    width = undefined,
+    height = undefined,
+    forceLoad = false,
 }: Readonly<
     {
         large?: boolean;
         maxSize?: number;
         customAvatarClass?: string;
+        width?: number;
+        height?: number;
+        forceLoad: boolean;
     } & HTMLAttributes<HTMLDivElement>
 >) {
     const { t } = useTranslation();
@@ -27,9 +33,13 @@ export default function Avatar({
     return (
         <Link href="/" aria-label="Home" className={`pointer-events-auto ${className}`} style={style}>
             <LazyImg
+                width={width}
+                height={height}
                 image={gravatar.url(email, { s: `${maxSize}` })}
                 preImage={gravatar.url(email, { s: '16' })}
                 alt={t('img-alt.home')}
+                title={t('img-alt.home')}
+                forceLoad={forceLoad}
                 className={`max-h-full max-w-full rounded-full bg-zinc-100 object-cover dark:bg-zinc-800 ${iconSize}`}
             />
         </Link>
