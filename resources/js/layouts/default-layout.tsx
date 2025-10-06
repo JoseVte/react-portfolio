@@ -1,6 +1,7 @@
 import AppFooter from '@/components/app-footer';
 import AppHeader from '@/components/app-header';
 import { Appearance, useAppearance } from '@/hooks/use-appearance';
+import { SharedData } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { theme as BaseTheme, createTheme, ThemeProvider } from 'flowbite-react';
 import gravatar from 'gravatar';
@@ -9,7 +10,6 @@ import { CookieConsent, Cookies, getCookieConsentValue } from 'react-cookie-cons
 import ReactGA from 'react-ga4';
 import { useTranslation } from 'react-i18next';
 import { twMerge } from 'tailwind-merge';
-import { SharedData } from '@/types';
 
 export default function DefaultLayout({
     children,
@@ -57,7 +57,6 @@ export default function DefaultLayout({
     useEffect(() => {
         document.documentElement.lang = i18n.resolvedLanguage ?? i18n.language;
     }, [i18n.language, i18n.resolvedLanguage]);
-
 
     const replaceTheme = (classes: string, oldColor: string, newColor: string) => {
         return twMerge(classes, classes.replaceAll(oldColor, newColor));
