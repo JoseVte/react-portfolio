@@ -30,4 +30,4 @@ $handleImageRequest = static function (Request $request, Image $image) {
 
 Route::get('assets/{image:path}', $handleImageRequest)->name('asset')->where('image', '.*');
 
-Route::get('images/{image:path}', $handleImageRequest)->name('asset')->where('image', '.*');
+Route::get('images/{image:path}', $handleImageRequest)->name('images')->where('image', '.*');

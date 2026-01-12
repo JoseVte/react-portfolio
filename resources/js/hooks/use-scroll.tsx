@@ -16,7 +16,7 @@ export function useScroll() {
         document.addEventListener('scroll', onChange);
         setIsOnTop(scrollY === 0);
 
-        return () => document.removeEventListener('change', onChange);
+        return () => document.removeEventListener('scroll', onChange);
     }, []);
 
     return !!isOnTop;
