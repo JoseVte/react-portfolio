@@ -36,8 +36,8 @@ export default function DeleteImageModal({ image, onDeleted, onCloseModal }: Rea
             <ModalBody>
                 {error && <Alert className="mb-5">Error deleting image</Alert>}
                 <div className="mb-5">
-                    <div className="relative mx-auto aspect-[9/10] w-full flex-none overflow-hidden rounded-xl bg-zinc-100 sm:rounded-2xl dark:bg-zinc-800">
-                        <img src={image.url} className="absolute inset-0 h-full w-full object-cover !filter-none" alt={image.name} />
+                    <div className="relative mx-auto aspect-9/10 w-full flex-none overflow-hidden rounded-xl bg-zinc-100 sm:rounded-2xl dark:bg-zinc-800">
+                        <img src={image.url} className="absolute inset-0 h-full w-full object-cover filter-none!" alt={image.name} />
                     </div>
                 </div>
             </ModalBody>

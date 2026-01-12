@@ -8,7 +8,6 @@ import _resumeEs from '../../../assets/resume/es.json';
 
 export default function Work() {
     const { t, i18n } = useTranslation();
-    // @ts-expect-error Resume schema type
     const resumeEn = _resumeEn as ResumeSchema;
     const resumeEs = _resumeEs as ResumeSchema;
     const resume = i18n.resolvedLanguage === 'en' ? resumeEn.work : resumeEs.work;

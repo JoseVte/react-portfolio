@@ -13,14 +13,21 @@ import { GitHubRepository } from '@/types';
 import { Head } from '@inertiajs/react';
 import { Select } from 'flowbite-react';
 import _ from 'lodash';
-import React, { JSX, ReactElement, useState } from 'react';
+import React, { JSX, lazy, ReactElement, Suspense, useState } from 'react';
 import { Activity, BlockElement, Props as CalendarProps } from 'react-activity-calendar';
-import GitHubCalendar from 'react-github-calendar';
 import { useTranslation } from 'react-i18next';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { ThreeDot } from 'react-loading-indicators';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 
+const GitHubCalendar = lazy(() =>
+    import('react-github-calendar').then((module) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        /* @ts-expect-error */
+        const component = module.default || module.GitHubCalendar || module;
+        return { default: component };
+    }),
+);
 export default function Projects() {
     const { t, i18n } = useTranslation();
     const { appearance, updateAppearance } = useAppearance();
@@ -218,15 +225,17 @@ export default function Projects() {
                         </Select>
                     </div>
                     <div className="flex w-full items-center justify-center">
-                        <GitHubCalendar
-                            labels={labels}
-                            weekStart={1}
-                            year={parseInt(year)}
-                            hideColorLegend
-                            renderBlock={showTooltip}
-                            colorScheme={appearance === 'system' ? undefined : appearance}
-                            username="josevte"
-                        />
+                        <Suspense fallback={<div className="h-37.5" />}>
+                            <GitHubCalendar
+                                labels={labels}
+                                weekStart={1}
+                                year={parseInt(year)}
+                                showColorLegend
+                                renderBlock={showTooltip}
+                                colorScheme={appearance === 'system' ? undefined : appearance}
+                                username="josevte"
+                            />
+                        </Suspense>
                     </div>
                     <ReactTooltip id="calendar-tooltip" />
                 </div>

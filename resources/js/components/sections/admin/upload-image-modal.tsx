@@ -69,8 +69,8 @@ export default function UploadImageModal({ categories, onUploaded, onCloseModal 
 
                     {previewUrl && (
                         <div id="preview" className="mb-5">
-                            <div className="relative mx-auto aspect-[9/10] h-48 flex-none overflow-hidden rounded-xl bg-zinc-100 sm:rounded-2xl dark:bg-zinc-800">
-                                <img src={previewUrl} className="absolute inset-0 h-full w-full object-cover !filter-none" alt="Preview" />
+                            <div className="relative mx-auto aspect-9/10 h-48 flex-none overflow-hidden rounded-xl bg-zinc-100 sm:rounded-2xl dark:bg-zinc-800">
+                                <img src={previewUrl} className="absolute inset-0 h-full w-full object-cover filter-none!" alt="Preview" />
                             </div>
                         </div>
                     )}

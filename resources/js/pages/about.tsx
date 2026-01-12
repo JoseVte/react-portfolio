@@ -33,9 +33,9 @@ export default function About() {
                 <Container className="mt-16 sm:mt-20 lg:mt-32">
                     <div className="grid grid-cols-1 gap-y-16 lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:gap-y-12">
                         <div className="lg:pl-20">
-                            <div className="mx-auto -mt-30 mb-10 h-[420px] max-w-xs px-2.5 lg:mx-0 lg:-mb-20 lg:h-[700px] lg:max-w-none">
+                            <div className="mx-auto -mt-30 mb-10 h-105 max-w-xs px-2.5 lg:mx-0 lg:-mb-20 lg:h-175 lg:max-w-none">
                                 <ParallaxBanner
-                                    className="aspect-[1/1] !overflow-visible"
+                                    className="aspect-square overflow-visible!"
                                     layers={[
                                         {
                                             translateY: [20, 60],
@@ -56,14 +56,14 @@ export default function About() {
                                             translateY: [100, 60],
                                             speed: 10,
                                             children: (
-                                                <div className="-mx-4 block h-72 bg-gradient-to-t from-white to-transparent lg:hidden lg:h-60 dark:from-zinc-900" />
+                                                <div className="-mx-4 block h-72 bg-linear-to-t from-white to-transparent lg:hidden lg:h-60 dark:from-zinc-900" />
                                             ),
                                         },
                                         {
                                             translateY: [100, 75],
                                             speed: 10,
                                             children: (
-                                                <div className="-mx-4 hidden h-60 bg-gradient-to-t from-white to-transparent lg:block lg:h-60 dark:from-zinc-900" />
+                                                <div className="-mx-4 hidden h-60 bg-linear-to-t from-white to-transparent lg:block lg:h-60 dark:from-zinc-900" />
                                             ),
                                         },
                                     ]}

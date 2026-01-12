@@ -101,7 +101,7 @@ export default function Admin() {
                                         className="group relative flex cursor-pointer flex-col items-start"
                                         onClick={() => openModalImage(image)}
                                     >
-                                        <div className="relative aspect-[9/10] w-full flex-none overflow-hidden rounded-xl bg-zinc-100 sm:rounded-2xl dark:bg-zinc-800">
+                                        <div className="relative aspect-9/10 w-full flex-none overflow-hidden rounded-xl bg-zinc-100 sm:rounded-2xl dark:bg-zinc-800">
                                             <LazyImg
                                                 image={`/assets/${image.path}`}
                                                 preImage={`/assets/${image.path}`}

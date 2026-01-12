@@ -1,5 +1,5 @@
 User-agent: *
-Disallow: *
+Disallow: /admin
 
 Allow: /
 Allow: /about

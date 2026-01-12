@@ -9,7 +9,7 @@ import Photos from '@/components/sections/photos';
 import Projects from '@/components/sections/projects';
 import Work from '@/components/sections/work';
 import DefaultLayout from '@/layouts/default-layout';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { Bounce } from 'react-awesome-reveal';
 import { useTranslation } from 'react-i18next';
 
@@ -44,30 +44,38 @@ export default function Homepage() {
                         </div>
                         <p className="mt-6 text-base text-zinc-600 dark:text-zinc-400">{descriptionExtended}</p>
                         <div className="mt-6 flex gap-6">
-                            <Link
+                            <a
                                 className="group -m-1 p-1"
                                 href={import.meta.env.VITE_PUBLIC_TWITTER}
+                                target="_blank"
                                 aria-label={t('follow', { social: 'Twitter' })}
                             >
                                 <Twitter className="size-6 fill-zinc-500 transition group-hover:fill-zinc-600 dark:fill-zinc-400 dark:group-hover:fill-yellow-300" />
-                            </Link>
-                            <Link
+                            </a>
+                            <a
                                 className="group -m-1 p-1"
                                 href={import.meta.env.VITE_PUBLIC_INSTAGRAM}
+                                target="_blank"
                                 aria-label={t('follow', { social: 'Instagram' })}
                             >
                                 <Instagram className="size-6 fill-zinc-500 transition group-hover:fill-zinc-600 dark:fill-zinc-400 dark:group-hover:fill-yellow-300" />
-                            </Link>
-                            <Link className="group -m-1 p-1" href={import.meta.env.VITE_PUBLIC_GITHUB} aria-label={t('follow', { social: 'GitHub' })}>
+                            </a>
+                            <a
+                                className="group -m-1 p-1"
+                                href={import.meta.env.VITE_PUBLIC_GITHUB}
+                                target="_blank"
+                                aria-label={t('follow', { social: 'GitHub' })}
+                            >
                                 <Github className="size-6 fill-zinc-500 transition group-hover:fill-zinc-600 dark:fill-zinc-400 dark:group-hover:fill-yellow-300" />
-                            </Link>
-                            <Link
+                            </a>
+                            <a
                                 className="group -m-1 p-1"
                                 href={import.meta.env.VITE_PUBLIC_LINKEDIN}
+                                target="_blank"
                                 aria-label={t('follow', { social: 'LinkedIn' })}
                             >
                                 <LinkedIn className="size-6 fill-zinc-500 transition group-hover:fill-zinc-600 dark:fill-zinc-400 dark:group-hover:fill-yellow-300" />
-                            </Link>
+                            </a>
                         </div>
                     </div>
                     <AvatarContainer className="m-auto hidden size-60 items-center justify-center transition-all lg:flex">
