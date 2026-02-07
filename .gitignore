@@ -23,7 +23,14 @@ npm-debug.log
 yarn-error.log
 /auth.json
 /.fleet
+/.ai
+/.agents
+/.claude
+/.gemini
+/.github/skills
 /.idea
+/.junie
 /.nova
 /.vscode
 /.zed
+.mcp.json

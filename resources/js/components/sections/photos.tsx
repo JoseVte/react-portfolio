@@ -31,7 +31,7 @@ export default function Photos() {
                         {images.map((image, i) => (
                             <div
                                 key={i}
-                                className={`relative aspect-9/10 w-44 flex-none overflow-hidden rounded-xl bg-zinc-100 sm:w-72 sm:rounded-2xl dark:bg-zinc-800 ${_.sample(rotations)}`}
+                                className={`aspect-1 relative w-44 flex-none overflow-hidden rounded-xl bg-zinc-100 sm:w-72 sm:rounded-2xl dark:bg-zinc-800 ${_.sample(rotations)}`}
                             >
                                 <LazyImg
                                     width={300}

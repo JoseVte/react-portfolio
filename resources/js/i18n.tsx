@@ -85,6 +85,9 @@ const messages = {
             'calendar.total': '{{count}} activities in {{year}}',
 
             'button.change-appearance': 'Change appearance',
+
+            'lazy-img.loading': 'Loading {{alt}}...',
+            'lazy-img.error': 'Error loading image',
         },
     },
     es: {
@@ -165,6 +168,9 @@ const messages = {
             'calendar.total': '{{count}} actividades en {{year}}',
 
             'button.change-appearance': 'Cambiar apariencia',
+
+            'lazy-img.loading': 'Cargando {{alt}}...',
+            'lazy-img.error': 'Error al cargar la imagen',
         },
     },
 };

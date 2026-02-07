@@ -18,8 +18,7 @@ $handleImageRequest = static function (Request $request, Image $image) {
         cache()->forget("image-{$image->path}");
     }
 
-
-    if (!Storage::exists($image->path)) {
+    if (! Storage::exists($image->path)) {
         abort(404, 'The file does not exist.');
     }
 
