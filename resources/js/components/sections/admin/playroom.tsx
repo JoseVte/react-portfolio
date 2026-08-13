@@ -5,12 +5,11 @@ import { PlayroomGame } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { Button } from 'flowbite-react';
 import _ from 'lodash';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
 import { ReactSortable } from 'react-sortablejs';
 
 export default function Playroom() {
-    const [loaded, setLoaded] = useState(false);
     const [games, setGames] = useState<PlayroomGame[]>([]);
     const [isShowModal, setIsShowModal] = useState(false);
     const [isShowModalGame, setIsShowModalGame] = useState(false);
@@ -67,10 +66,9 @@ export default function Playroom() {
         await refreshPlayroom();
     };
 
-    if (!loaded) {
-        setLoaded(true);
+    useEffect(() => {
         refresh().then();
-    }
+    }, []);
 
     return (
         <>

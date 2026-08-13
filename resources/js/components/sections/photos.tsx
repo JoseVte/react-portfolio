@@ -1,7 +1,7 @@
 import LazyImg from '@/components/lazy-img';
 import { Image } from '@/types';
 import _ from 'lodash';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Rotate, Slide } from 'react-awesome-reveal';
 import { useTranslation } from 'react-i18next';
 
@@ -10,18 +10,16 @@ export default function Photos() {
 
     const rotations = ['rotate-2', '-rotate-2'];
     const [images, setImages] = useState<Image[]>([]);
-    const [loaded, setLoaded] = useState(false);
 
     const getImages = async (type: string): Promise<Array<Image>> => {
         return await (await fetch(route('assets.show', type))).json();
     };
 
-    if (!loaded) {
-        setLoaded(true);
+    useEffect(() => {
         Promise.all([getImages('cat'), getImages('mountain'), getImages('other'), getImages('travel')]).then((response) => {
             setImages(_.sampleSize(response[0].concat(response[1], response[2], response[3]), 5));
         });
-    }
+    }, []);
 
     return (
         <div className="mt-16 sm:mt-20">

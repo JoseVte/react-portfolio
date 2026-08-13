@@ -6,7 +6,7 @@ import { PlayroomGame, SteamInfo } from '@/types';
 import { nl2br } from '@/utils';
 import { Head } from '@inertiajs/react';
 import { Modal, ModalBody, ModalHeader } from 'flowbite-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Marquee from 'react-fast-marquee';
 import { useTranslation } from 'react-i18next';
 import { Tooltip } from 'react-tooltip';
@@ -19,27 +19,22 @@ export default function More() {
     const description = t('layouts.more.description');
 
     const [steam, setSteam] = useState<SteamInfo>();
-    const [loadedSteam, setLoadedSteam] = useState(false);
-
     const [playroomGames, setPlayroomGames] = useState<PlayroomGame[]>([]);
-    const [loadedPlayroomGames, setLoadedPlayroomGames] = useState(false);
 
     const [isShowModal, setIsShowModal] = useState(false);
     const [playroomGameModal, setPlayroomGameModal] = useState<PlayroomGame>();
 
-    if (!loadedSteam) {
-        setLoadedSteam(true);
+    useEffect(() => {
         fetch(route('steam'))
             .then((res) => res.json())
             .then((data: SteamInfo) => setSteam(data));
-    }
+    }, []);
 
-    if (!loadedPlayroomGames) {
-        setLoadedPlayroomGames(true);
+    useEffect(() => {
         fetch(route('playroom'))
             .then((res) => res.json())
             .then((data: PlayroomGame[]) => setPlayroomGames(data));
-    }
+    }, []);
 
     const openDetailGame = (game: PlayroomGame) => {
         setPlayroomGameModal(game);

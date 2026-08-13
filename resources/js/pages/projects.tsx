@@ -13,7 +13,7 @@ import { GitHubRepository } from '@/types';
 import { Head } from '@inertiajs/react';
 import { Select } from 'flowbite-react';
 import _ from 'lodash';
-import React, { JSX, lazy, ReactElement, Suspense, useState } from 'react';
+import React, { JSX, lazy, ReactElement, Suspense, useEffect, useState } from 'react';
 import { Activity, BlockElement, Props as CalendarProps } from 'react-activity-calendar';
 import { useTranslation } from 'react-i18next';
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -39,7 +39,6 @@ export default function Projects() {
     const description = t('layouts.projects.description');
 
     const [projects, setProjects] = useState<GitHubRepository[]>([]);
-    const [loaded, setLoaded] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(1);
 
@@ -59,18 +58,17 @@ export default function Projects() {
         return params;
     };
 
-    if (!loaded) {
-        setLoaded(true);
+    useEffect(() => {
         fetch(route('github', { ...getSearchParams() }))
             .then((res) => res.json())
             .then((data: GitHubRepository[]) => setProjects(data));
-    }
+    }, []);
 
     const fetchNextPage = () => {
         fetch(route('github', { ...getSearchParams({ page: page + 1 }) }))
             .then((res) => res.json())
             .then((data: GitHubRepository[]) => {
-                setProjects([...projects, ...data]);
+                setProjects((currentProjects) => [...currentProjects, ...data]);
                 setPage(page + 1);
                 if (data.length === 0) {
                     setHasMore(false);

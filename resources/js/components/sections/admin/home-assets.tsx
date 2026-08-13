@@ -3,11 +3,10 @@ import DeleteImageModal from '@/components/sections/admin/delete-image-modal';
 import UploadImageModal from '@/components/sections/admin/upload-image-modal';
 import { Category, Image } from '@/types';
 import { Button } from 'flowbite-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
 
 export default function HomeAssets() {
-    const [loaded, setLoaded] = useState(false);
     const [isShowModal, setIsShowModal] = useState(false);
     const [isShowModalImage, setIsShowModalImage] = useState(false);
 
@@ -43,10 +42,9 @@ export default function HomeAssets() {
         await refreshImages();
     };
 
-    if (!loaded) {
-        setLoaded(true);
+    useEffect(() => {
         refresh().then();
-    }
+    }, []);
 
     return (
         <>
