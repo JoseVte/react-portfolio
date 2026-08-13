@@ -41,14 +41,15 @@ export default function About() {
                                             translateY: [20, 60],
                                             children: (
                                                 <LazyImg
-                                                    width={667}
+                                                    width={500}
                                                     height={500}
                                                     image="/images/portrait.jpg"
                                                     preImage="/images/portrait-min.jpg"
                                                     alt={t('img-alt.profile')}
                                                     title={t('img-alt.profile')}
                                                     forceLoad
-                                                    className={`aspect-square rounded-2xl bg-zinc-100 object-cover dark:bg-zinc-800 ${sample(['rotate-3', '-rotate-3', 'rotate-2', '-rotate-2'])}`}
+                                                    withOverflow
+                                                    className={`aspect-square h-100 w-100 rounded-2xl bg-zinc-100 object-cover 2xl:h-125 2xl:w-125 dark:bg-zinc-800 ${sample(['rotate-3', '-rotate-3', 'rotate-2', '-rotate-2'])}`}
                                                 />
                                             ),
                                         },
@@ -56,14 +57,14 @@ export default function About() {
                                             translateY: [100, 60],
                                             speed: 10,
                                             children: (
-                                                <div className="-mx-4 block h-72 bg-linear-to-t from-white to-transparent lg:hidden lg:h-60 dark:from-zinc-900" />
+                                                <div className="-mx-4 block h-72 w-110 bg-linear-to-t from-white to-transparent lg:hidden lg:h-60 2xl:w-132 dark:from-zinc-900" />
                                             ),
                                         },
                                         {
                                             translateY: [100, 75],
                                             speed: 10,
                                             children: (
-                                                <div className="-mx-4 hidden h-60 bg-linear-to-t from-white to-transparent lg:block lg:h-60 dark:from-zinc-900" />
+                                                <div className="-mx-4 hidden h-60 w-110 bg-linear-to-t from-white to-transparent lg:block lg:h-60 2xl:w-132 dark:from-zinc-900" />
                                             ),
                                         },
                                     ]}

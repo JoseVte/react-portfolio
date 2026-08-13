@@ -33,6 +33,7 @@ export default function DefaultLayout({
     const navLinks = {
         '/about': t('nav.about'),
         '/projects': t('nav.projects'),
+        '/more': t('nav.more'),
     };
 
     const handleAcceptCookie = () => {

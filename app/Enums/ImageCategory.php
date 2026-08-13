@@ -11,6 +11,7 @@ enum ImageCategory: string
     case MOUNTAIN = 'mountain';
     case OTHER = 'other';
     case TRAVEL = 'travel';
+    case PLAYROOM = 'playroom';
 
     public static function rule(): Enum
     {

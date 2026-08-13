@@ -9,7 +9,7 @@ jobs:
   build-php:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -41,7 +41,7 @@ jobs:
   build-assets:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -78,16 +78,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Download PHP Vendor
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: php-vendor
           path: vendor/
 
       - name: Download Built Assets
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: public-assets
 

@@ -26,18 +26,24 @@ class ImageFactory extends Factory
     public function definition(): array
     {
         $adapter = new Filesystem(new LocalFilesystemAdapter(
-            base_path('public/images')
+            storage_path('app/public')
         ));
 
         /** @var ImageCategory $category */
         $category = $this->faker->randomElement(ImageCategory::cases());
-        $file = $this->faker->image();
+
+        if (! $adapter->directoryExists($category->value)) {
+            $adapter->createDirectory($category->value);
+        }
+
         $filename = $this->faker->slug;
-        $adapter->write($category->value.'/'.$filename.'.png', file_get_contents($file));
+        $imagePath = $category->value.'/'.$filename.'.png';
+
+        $adapter->write($imagePath, 'fake image content');
 
         return [
             'name' => $this->faker->slug,
-            'path' => $category->value.'/'.$filename.'.png',
+            'path' => $imagePath,
             'category' => $category,
             'original_name' => $filename.'.png',
             'mimetype' => 'image/png',

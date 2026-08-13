@@ -72,7 +72,7 @@ export default function AppHeader({
                                     </Fade>
                                 )}
                             </div>
-                            <div className="flex flex-1 items-center justify-end md:justify-center">
+                            <div className="flex items-center justify-end md:justify-center">
                                 <div className="pointer-events-auto md:hidden">
                                     <button
                                         type="button"

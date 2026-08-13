@@ -22,6 +22,8 @@ return [
         'installHook.js.map',
         '*.jpg',
         '*.png',
+        '_boost/*',
+        'locales/*',
     ],
 
     /*

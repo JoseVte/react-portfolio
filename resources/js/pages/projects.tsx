@@ -190,11 +190,12 @@ export default function Projects() {
         },
     } satisfies CalendarProps['labels'];
 
-    const showTooltip = (block: BlockElement, activity: Activity): ReactElement =>
-        React.cloneElement(block, {
+    const showTooltip = (block: BlockElement, activity: Activity): ReactElement => {
+        return React.cloneElement(block, {
             'data-tooltip-id': 'calendar-tooltip',
-            'data-tooltip-html': t('calendar.tooltip', { count: activity.count, date: activity.date }),
+            'data-tooltip-content': t('calendar.tooltip', { count: activity.count, date: activity.date }),
         });
+    };
 
     return (
         <DefaultLayout appearance={appearance} updateAppearance={updateAppearance}>

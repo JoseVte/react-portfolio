@@ -1,67 +1,44 @@
 <?php
 
 use App\Enums\ImageCategory;
+use App\Http\Controllers\Admin\AssetController;
+use App\Http\Controllers\Admin\PlayroomController;
 use App\Http\Middleware\IpMiddleware;
-use App\Http\Requests\AssetRequest;
-use App\Models\Image;
 use Illuminate\Support\Str;
 
 Route::inertia('admin', 'admin')->name('admin');
 
 Route::prefix('api')->group(function () {
     Route::prefix('assets')->name('assets.')->group(function () {
-        Route::get('/', function () {
-            return response()->json(Image::all()->groupBy('category'));
-        })->name('index');
+        Route::get('/', [AssetController::class, 'index'])->name('index');
 
-        Route::get('{category}', function (string $category) {
-            return response()->json(Image::where('category', $category)->get());
-        })->withoutMiddleware(IpMiddleware::class)->name('show');
+        Route::get('{category}', [AssetController::class, 'byCategory'])
+            ->withoutMiddleware(IpMiddleware::class)
+            ->name('show');
 
-        Route::post('/', function (AssetRequest $request) {
-            $validated = $request->validated();
+        Route::post('/', [AssetController::class, 'store'])->name('store');
 
-            $file = $request->file('file') ?: $request->get('file');
-            $extension = $file->clientExtension();
+        Route::delete('{category}/{image}', [AssetController::class, 'delete'])->name('destroy');
+    });
 
-            $fileCount = 1;
-            if (Storage::has($validated['category'])) {
-                $fileCount += count(Storage::listContents($validated['category'])->toArray());
-            }
+    Route::prefix('playrooms')->name('playroom.')->group(function () {
+        Route::get('/', [PlayroomController::class, 'index'])->name('index');
 
-            while (Storage::has($validated['category'].'/'.$fileCount.'.'.$extension)) {
-                $fileCount++;
-            }
+        Route::post('/', [PlayroomController::class, 'store'])->name('store');
 
-            $path = $validated['category'].'/'.$fileCount.'.'.$extension;
-            Storage::put($path, $file->getContent());
+        Route::post('/{game}', [PlayroomController::class, 'update'])->name('update');
 
-            Image::create([
-                'category' => $validated['category'],
-                'name' => $fileCount.'.'.$extension,
-                'original_name' => $file->getClientOriginalName(),
-                'mimetype' => $file->getMimeType(),
-                'path' => $path,
-            ]);
+        Route::put('/', [PlayroomController::class, 'sort'])->name('sort');
 
-            return back();
-        })->name('store');
-
-        Route::delete('{category}/{image}', function (string $category, Image $image) {
-            if (Storage::has($image->path)) {
-                Storage::delete($image->path);
-            }
-
-            $image->delete();
-
-            return back();
-        })->name('destroy');
+        Route::delete('/{game}', [PlayroomController::class, 'delete'])->name('destroy');
     });
 
     Route::get('categories', function () {
-        return response()->json(array_map(static fn (ImageCategory $imageCategory) => [
+        $categories = array_filter(array_map(static fn (ImageCategory $imageCategory) => [
             'name' => Str::ucfirst($imageCategory->value),
             'value' => $imageCategory->value,
-        ], ImageCategory::cases()));
+        ], ImageCategory::cases()), fn ($category) => $category['value'] !== ImageCategory::PLAYROOM->value);
+
+        return response()->json($categories);
     })->name('categories');
 });

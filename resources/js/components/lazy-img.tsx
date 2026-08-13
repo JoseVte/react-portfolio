@@ -4,26 +4,31 @@ import { useTranslation } from 'react-i18next';
 export default function LazyImg({
     image,
     preImage,
+    errorImage = undefined,
     alt,
     className = '',
     title = '',
     width = undefined,
     height = undefined,
     forceLoad = false,
+    withOverflow = false,
 }: Readonly<{
     image: string;
     preImage: string;
+    errorImage?: string;
     alt: string;
     className?: string;
     title?: string;
     width?: number;
     height?: number;
     forceLoad?: boolean;
+    withOverflow?: boolean;
 }>) {
     const { t } = useTranslation();
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
     const [isDark, setIsDark] = useState(false);
+    const [imageToLoad, setImageToLoad] = useState(image);
 
     useEffect(() => {
         // Detect initial theme
@@ -66,22 +71,29 @@ export default function LazyImg({
 
     const themeColors = getThemeColors();
 
+    const changeToErrorImage = () => {
+        setImageError(true);
+        if (errorImage) {
+            setImageToLoad(errorImage);
+        }
+    };
+
     return (
-        <div style={{ position: 'relative', width, height, overflow: 'hidden' }}>
+        <div style={{ position: 'relative', width, height, overflow: withOverflow ? 'visible' : 'hidden' }}>
             <img
                 width={width}
                 height={height}
                 className={className}
                 loading={forceLoad ? 'eager' : 'lazy'}
-                data-src={image}
+                data-src={imageToLoad}
                 src={preImage}
                 alt={alt}
                 title={title}
                 onLoad={() => setImageLoaded(true)}
-                onError={() => setImageError(true)}
+                onError={() => changeToErrorImage()}
                 style={{ opacity: imageLoaded ? 1 : 0.5 }}
             />
-            {(!imageLoaded || imageError) && (
+            {(!imageLoaded || (imageError && !errorImage)) && (
                 <div
                     style={{
                         position: 'absolute',

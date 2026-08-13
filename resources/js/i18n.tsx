@@ -19,6 +19,9 @@ const messages = {
             'layouts.projects.title': 'Projects - Jose Vicente',
             'layouts.projects.description': 'Things I’ve made trying to put my dent in the universe.',
 
+            'layouts.more.title': 'More - Jose Vicente',
+            'layouts.more.description': 'Different staffs that I would share with you.',
+
             'layouts.admin.title': 'Admin - Jose Vicente',
             'layouts.admin.description': 'Admin - Jose Vicente',
 
@@ -26,6 +29,7 @@ const messages = {
             'nav.projects': 'Projects',
             'nav.menu': 'Menu',
             'nav.navigation': 'Navigation',
+            'nav.more': 'More',
 
             'footer.copy': 'All rights reserved.',
 
@@ -84,6 +88,17 @@ const messages = {
             'calendar.tooltip': '{{count}} activities on {{date}}',
             'calendar.total': '{{count}} activities in {{year}}',
 
+            'playroom.title': 'Playroom',
+            'playroom.description': 'My small collection of board games that I have acquired over the years.',
+
+            'steam.title': 'Steam',
+            'steam.description': 'My small collection of Steam games that I have acquired over the years.',
+
+            'recently-played': 'Recently played',
+            'owned-games': 'Owned  games',
+            'played-2-weeks': 'Last 2 weeks',
+            'played-total': 'Total',
+
             'button.change-appearance': 'Change appearance',
 
             'lazy-img.loading': 'Loading {{alt}}...',
@@ -93,7 +108,7 @@ const messages = {
     es: {
         translation: {
             'layouts.seo-title': 'Jose Vicente - Desarrollador web',
-            'layouts.title': 'Jose Vicente - Desarrollador web, Montañero, Amante de gatos y Juegos de Mesa/Cartas Enjoyer.',
+            'layouts.title': 'Jose Vicente - Desarrollador web, Adorador de gatos, Montañero y Juegos de Mesa/Cartas Enjoyer.',
             'layouts.description':
                 'Soy Jose Vicente, un desarrollador web con una extensa experiencia en el diseño, desarrollo y despliegue de aplicaciones web.',
             'layouts.description-extended':
@@ -105,6 +120,9 @@ const messages = {
             'layouts.projects.title': 'Proyectos - Jose Vicente',
             'layouts.projects.description': 'Cosas que he hecho tratando de hacer mella en el universo.',
 
+            'layouts.more.title': 'Más - Jose Vicente',
+            'layouts.more.description': 'Otras cosas que me gustaría compartir con vosotros.',
+
             'layouts.admin.title': 'Admin - Jose Vicente',
             'layouts.admin.description': 'Admin - Jose Vicente',
 
@@ -112,6 +130,7 @@ const messages = {
             'nav.projects': 'Proyectos',
             'nav.menu': 'Menu',
             'nav.navigation': 'Índice',
+            'nav.more': 'Más',
 
             'footer.copy': 'Todos los derechos reservados.',
 
@@ -166,6 +185,17 @@ const messages = {
 
             'calendar.tooltip': '{{count}} actividades en {{date}}',
             'calendar.total': '{{count}} actividades en {{year}}',
+
+            'playroom.title': 'Ludoteca',
+            'playroom.description': 'Mi pequeña colección de juegos de mesa que he ido adquiriendo con los años.',
+
+            'steam.title': 'Steam',
+            'steam.description': 'Mi pequeña colección de juegos de Steam que he ido adquiriendo con los años.',
+
+            'recently-played': 'Juegos recientes',
+            'owned-games': 'Mis juegos',
+            'played-2-weeks': 'Últimas 2 semanas',
+            'played-total': 'Total',
 
             'button.change-appearance': 'Cambiar apariencia',
 

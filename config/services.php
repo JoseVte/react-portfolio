@@ -39,4 +39,10 @@ return [
         'token' => env('GITHUB_OAUTH_TOKEN'),
     ],
 
+    'steam' => [
+        'api-url' => env('STEAM_API_URL'),
+        'store-url' => env('STEAM_STORE_URL'),
+        'user-id' => env('STEAM_USER_ID'),
+        'api-key' => env('STEAM_API_KEY'),
+    ],
 ];

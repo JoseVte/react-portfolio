@@ -23,6 +23,13 @@ it('projects page returns a successful response', function () {
     $response->assertInertia(fn (AssertableInertia $page) => $page->component('projects'));
 });
 
+it('more page returns a successful response', function () {
+    $response = $this->get(route('more'));
+
+    $response->assertStatus(200);
+    $response->assertInertia(fn (AssertableInertia $page) => $page->component('more'));
+});
+
 it('admin page returns a successful response if ip is allowed', function () {
     config(['app.allowed-ips' => '127.0.0.1']);
     $response = $this->get(route('admin'));
