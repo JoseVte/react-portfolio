@@ -22,13 +22,11 @@ export default function DefaultLayout({
     }
 >) {
     const { t, i18n } = useTranslation();
-    const data = useAppearance();
-    if (appearance === undefined) {
-        appearance = data.appearance;
-    }
-    if (updateAppearance === undefined) {
-        updateAppearance = data.updateAppearance;
-    }
+    const page = usePage<SharedData>();
+    const fallbackAppearance = useAppearance();
+
+    const resolvedAppearance = appearance ?? fallbackAppearance.appearance;
+    const resolvedUpdateAppearance = updateAppearance ?? fallbackAppearance.updateAppearance;
 
     const navLinks = {
         '/about': t('nav.about'),
@@ -142,12 +140,12 @@ export default function DefaultLayout({
                 <Head title={t('layouts.seo-title')}>
                     <meta head-key="description" name="description" content={t('layouts.description')} />
                     <link rel="icon" type="image/png" href={gravatar.url(import.meta.env.VITE_PUBLIC_EMAIL, { s: '64' })} />
-                    <link rel="canonical" href={usePage<SharedData>().props.ziggy.url} />
+                    <link rel="canonical" href={page.props.ziggy.url} />
 
                     <meta property="og:title" content={t('layouts.seo-title')} />
                     <meta property="og:description" content={t('layouts.description')} />
                     <meta property="og:type" content="website" />
-                    <meta property="og:url" content={usePage().url} />
+                    <meta property="og:url" content={page.props.ziggy.url} />
                     <meta property="og:image" content={gravatar.url(import.meta.env.VITE_PUBLIC_EMAIL, { s: '1200' })} />
 
                     <meta name="twitter:card" content="summary_large_image" />
@@ -168,10 +166,10 @@ export default function DefaultLayout({
                     </div>
                     <div className="relative">
                         <AppHeader
-                            isHomePage={usePage().url === '/'}
+                            isHomePage={page.url === '/'}
                             navLinks={navLinks}
-                            appearance={appearance}
-                            updateAppearance={updateAppearance}
+                            appearance={resolvedAppearance}
+                            updateAppearance={resolvedUpdateAppearance}
                         />
                         <main>{children}</main>
                         <AppFooter navLinks={navLinks} />

@@ -74,12 +74,13 @@ export interface SteamInfo {
     recently_games: Array<{
         name: string;
         steam_url: string;
-        website: string;
+        website: string | null;
         style: {
-            background: string;
-            image: string;
-            capsule_image: string;
-            capsule_imagev5: string;
+            background: string | null;
+            background_raw: string | null;
+            image: string | null;
+            capsule_image: string | null;
+            capsule_imagev5: string | null;
         };
         time: {
             '2weeks': number;

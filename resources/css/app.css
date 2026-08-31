@@ -174,11 +174,12 @@
     }
 }
 
-img {
-    filter: blur(25px);
-    transition: all 0.2s;
-}
+@keyframes marquee {
+    from {
+        transform: translateX(0);
+    }
 
-img[lazy='loaded'] {
-    filter: none;
+    to {
+        transform: translateX(-50%);
+    }
 }

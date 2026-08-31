@@ -3,17 +3,13 @@
 namespace App\Observers;
 
 use App\Models\Image;
-use League\Flysystem\FilesystemException;
-use Storage;
+use Illuminate\Support\Facades\Storage;
 
 class ImageObserver
 {
-    /**
-     * @throws FilesystemException
-     */
     public function deleted(Image $image): void
     {
-        if (Storage::has($image->path)) {
+        if (Storage::exists($image->path)) {
             Storage::delete($image->path);
         }
     }

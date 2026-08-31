@@ -59,9 +59,14 @@ export default function Projects() {
     };
 
     useEffect(() => {
-        fetch(route('github', { ...getSearchParams() }))
-            .then((res) => res.json())
-            .then((data: GitHubRepository[]) => setProjects(data));
+        const controller = new AbortController();
+
+        fetch(route('github', { ...getSearchParams() }), { signal: controller.signal })
+            .then((response) => response.json())
+            .then((data: GitHubRepository[]) => setProjects(data))
+            .catch(() => undefined);
+
+        return () => controller.abort();
     }, []);
 
     const fetchNextPage = () => {
@@ -215,7 +220,7 @@ export default function Projects() {
                 <div className="mt-16 sm:mt-20">
                     <div className="my-4 flex w-full items-center justify-start gap-4 sm:w-auto sm:justify-end">
                         <Select value={year} icon={DateCalendarSearch} onChange={(e) => setYear(e.target.value)}>
-                            <option>Select a year</option>
+                            <option value="">{t('projects.select-year')}</option>
                             {years.map((year_number) => (
                                 <option key={year_number} value={year_number}>
                                     {year_number}

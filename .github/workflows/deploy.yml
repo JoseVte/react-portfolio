@@ -4,10 +4,45 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+# Two deploys running at once would interleave their rsync into the same directory.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
 
 jobs:
-  build-php:
+  test:
+    name: test
+    uses: ./.github/workflows/tests.yml
+
+  build:
+    name: build
+    needs: test
     runs-on: ubuntu-latest
+
+    # Vite compiles these into the bundle, so they have to exist at build time and there is no
+    # server .env here. They are repository variables rather than literals because this repo is
+    # public and the address would otherwise be scrapeable straight from the source.
+    #
+    # They are NOT secrets and must not be stored as such: every one of them is readable by
+    # anyone who downloads public/build. The next step is what stops a missing or misspelled
+    # variable from silently shipping a bundle full of `undefined`.
+    #
+    # They deliberately do not live in a .env.production file either. Laravel loads
+    # `.env.<APP_ENV>` in place of `.env` when APP_ENV is set in the process environment, so
+    # such a file would quietly replace the server configuration.
+    env:
+      VITE_APP_NAME: ${{ vars.VITE_APP_NAME }}
+      VITE_PUBLIC_EMAIL: ${{ vars.VITE_PUBLIC_EMAIL }}
+      VITE_PUBLIC_TWITTER: ${{ vars.VITE_PUBLIC_TWITTER }}
+      VITE_PUBLIC_TWITTER_USERNAME: ${{ vars.VITE_PUBLIC_TWITTER_USERNAME }}
+      VITE_PUBLIC_INSTAGRAM: ${{ vars.VITE_PUBLIC_INSTAGRAM }}
+      VITE_PUBLIC_GITHUB: ${{ vars.VITE_PUBLIC_GITHUB }}
+      VITE_PUBLIC_LINKEDIN: ${{ vars.VITE_PUBLIC_LINKEDIN }}
+      VITE_GOOGLE_ANALYTICS_ID: ${{ vars.VITE_GOOGLE_ANALYTICS_ID }}
+      VITE_SENTRY_DSN_PUBLIC: ${{ vars.VITE_SENTRY_DSN_PUBLIC }}
+
     steps:
       - uses: actions/checkout@v7
 
@@ -15,98 +50,156 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.5'
-          extensions: mbstring, bcmath, curl, openssl, xml, zip
+          extensions: mbstring, bcmath, curl, openssl, xml, zip, fileinfo
+          tools: composer:v2
           coverage: none
 
-      - name: Get composer cache directory
+      - name: Get Composer cache directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
-      - name: Cache dependencies
-        uses: actions/cache@v5
+      - name: Cache Composer dependencies
+        uses: actions/cache@v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          key: ${{ runner.os }}-composer-prod-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-prod-
 
-      - name: Install Composer dependencies
-        run: composer install --no-ansi --no-dev --no-interaction --no-plugins --no-progress --no-scripts --optimize-autoloader
+      # `--no-scripts` keeps package discovery out of CI; the Forge deploy script runs
+      # `php artisan optimize` on the server, which rebuilds the package manifest there.
+      - name: Install production Composer dependencies
+        run: composer install --no-ansi --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader
 
-      - name: Upload PHP Vendor
-        uses: actions/upload-artifact@v6
+      - name: Setup Node
+        uses: actions/setup-node@v7
         with:
-          name: php-vendor
-          path: vendor/
-
-  build-assets:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.5'
-          extensions: mbstring, bcmath, curl, openssl, xml, zip
-          coverage: none
-
-      - name: Install Composer dependencies
-        run: composer install --no-ansi --no-dev --no-interaction --no-plugins --no-progress --no-scripts --optimize-autoloader
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
+          node-version-file: .nvmrc
           cache: 'npm'
 
-      - name: Build Assets
+      # A repository variable that is missing or misspelled resolves to an empty string, and Vite
+      # would happily bake `undefined` into the bundle. Fail here instead of in production.
+      - name: Verify the client side configuration
+        run: |
+          missing=""
+          for key in VITE_APP_NAME VITE_PUBLIC_EMAIL VITE_PUBLIC_TWITTER VITE_PUBLIC_TWITTER_USERNAME \
+                     VITE_PUBLIC_INSTAGRAM VITE_PUBLIC_GITHUB VITE_PUBLIC_LINKEDIN \
+                     VITE_GOOGLE_ANALYTICS_ID VITE_SENTRY_DSN_PUBLIC; do
+            if [ -z "${!key}" ]; then
+              missing="$missing $key"
+            fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository variables:$missing"
+            echo "Set them under Settings > Secrets and variables > Actions > Variables."
+            exit 1
+          fi
+          echo "All client side variables are set."
+
+      - name: Build assets
         run: |
           npm ci
           npm run build:ssr
 
-      - name: Upload Built Assets
-        uses: actions/upload-artifact@v6
+      # A single tarball uploads far faster than the tens of thousands of files in vendor/.
+      - name: Pack the release
+        run: tar -czf release.tar.gz vendor public/build bootstrap/ssr
+
+      - name: Upload the release
+        uses: actions/upload-artifact@v7
         with:
-          name: public-assets
-          path: |
-            public/build/
-            bootstrap/ssr/
+          name: release
+          path: release.tar.gz
+          retention-days: 3
 
   deploy:
-    needs: [build-php, build-assets]
+    name: deploy
+    needs: build
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Download PHP Vendor
+      - name: Download the release
         uses: actions/download-artifact@v8
         with:
-          name: php-vendor
-          path: vendor/
+          name: release
 
-      - name: Download Built Assets
-        uses: actions/download-artifact@v8
-        with:
-          name: public-assets
+      - name: Unpack the release
+        run: |
+          tar -xzf release.tar.gz
+          rm release.tar.gz
 
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: unnecessary
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS || 'placeholder' }}
           if_key_exists: replace
 
-      - name: Deploy files via RSYNC
+      # Falling back to a scan is trust-on-first-use. Set the SSH_KNOWN_HOSTS secret
+      # (`ssh-keyscan -H <host>`) so the host key is actually verified.
+      - name: Pin the host key
         run: |
-          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" \
-          --exclude='.git/' \
-          --exclude='.github/' \
-          --exclude='node_modules/' \
-          --exclude='storage/*.key' \
-          --exclude='.env' \
-          ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}
+          if [ -z "${{ secrets.SSH_KNOWN_HOSTS }}" ]; then
+            echo "::warning::SSH_KNOWN_HOSTS is not set, falling back to ssh-keyscan"
+            ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+          fi
 
-      - name: Trigger Forge Deployment (Post-Deploy tasks)
-        run: curl -s "${{ secrets.FORGE_DEPLOY_URL }}"
+      # --delete keeps the remote tree in step with the release, so everything the server
+      # owns (env file, logs, caches, storage, the public/storage symlink) must be excluded.
+      #
+      # Build output is protected from --delete instead: filenames are content hashed, and a
+      # visitor who loaded the page just before the deploy still requests the previous chunks.
+      # The Forge deploy script prunes what has aged out.
+      - name: Deploy files via rsync
+        run: |
+          rsync -rlptDvz --delete --compress-level=9 \
+            --filter='protect /public/build/**' \
+            --filter='protect /bootstrap/ssr/**' \
+            --exclude='/.git/' \
+            --exclude='/.github/' \
+            --exclude='/node_modules/' \
+            --exclude='/tests/' \
+            --exclude='/storage/' \
+            --exclude='/bootstrap/cache/' \
+            --exclude='/public/storage' \
+            --exclude='/public/sitemap.xml' \
+            --exclude='/.env' \
+            --exclude='/.env.example' \
+            --exclude='/.editorconfig' \
+            --exclude='/.idea/' \
+            --exclude='/phpunit.xml' \
+            --exclude='/vitest.config.ts' \
+            --exclude='/_ide_helper*.php' \
+            --exclude='/.phpstorm.meta.php' \
+            --exclude='/*.md' \
+            --exclude='/release.tar.gz' \
+            -e "ssh -o StrictHostKeyChecking=yes" \
+            ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}
+
+      # Forge runs the site's deploy script: migrations, caches, php-fpm reload, queue restart.
+      # It must NOT build assets, that is the whole point of building them here.
+      - name: Trigger the Forge deployment
+        run: |
+          status=$(curl -s -o response.txt -w '%{http_code}' "${{ secrets.FORGE_DEPLOY_URL }}")
+          cat response.txt
+          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
+            echo "::error::Forge returned HTTP $status"
+            exit 1
+          fi
+
+      - name: Smoke test the deployment
+        run: |
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            status=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "${{ secrets.HEALTHCHECK_URL || 'https://app.josrom.io/up' }}" || true)
+            if [ "$status" = "200" ]; then
+              echo "Site is up"
+              exit 0
+            fi
+            echo "Attempt $attempt returned $status, retrying..."
+            sleep 10
+          done
+          echo "::error::The site did not come back up"
+          exit 1

@@ -2,16 +2,24 @@
 
 namespace App\Services;
 
-use Exception;
-use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Str;
+use Illuminate\Support\Str;
+use Throwable;
 
 class SteamService
 {
+    private const DAY_IN_SECONDS = 86400;
+
+    private const HOUR_IN_SECONDS = 3600;
+
+    /**
+     * Delay between store/stats calls so Steam does not rate limit us.
+     */
+    private const REQUEST_DELAY_IN_MICROSECONDS = 100_000;
+
     private string $userId;
 
     private string $apiKey;
@@ -22,254 +30,254 @@ class SteamService
 
     public function __construct()
     {
-        $this->userId = config('services.steam.user-id');
-        $this->apiKey = config('services.steam.api-key');
-        $this->apiUrl = config('services.steam.api-url');
-        $this->storeUrl = config('services.steam.store-url');
+        $this->userId = (string) config('services.steam.user-id');
+        $this->apiKey = (string) config('services.steam.api-key');
+        $this->apiUrl = (string) config('services.steam.api-url');
+        $this->storeUrl = (string) config('services.steam.store-url');
     }
 
+    /**
+     * @return array{summary: array<string, mixed>, recently_games: list<array<string, mixed>>, owned_games: list<array<string, mixed>>}
+     */
     public function getStats(): array
     {
+        $recentlyPlayedGames = $this->getRecentlyPlayedGames();
+
         return [
-            'summary' => $this->getSummary(),
-            'recently_games' => $this->getRecentlyPlayedGames(),
-            'owned_games' => $this->getOwnedGames()['owned'],
+            'summary' => [
+                ...$this->getSummary(),
+                'achievements' => array_sum(Arr::pluck($recentlyPlayedGames, 'achievements.current')),
+            ],
+            'recently_games' => $recentlyPlayedGames,
+            'owned_games' => $this->getOwnedGames(),
         ];
     }
 
+    /**
+     * @return array{nick: string, avatar: string, url: string, achievements: int}
+     */
     private function getSummary(): array
     {
-        return Cache::tags('steam')->remember('steam-summary-'.$this->userId, 60 * 60 * 24, function () {
-            $clientUser = $this->createUserClient();
-            $summary = $clientUser->get('/ISteamUser/GetPlayerSummaries/v0002', [
+        return Cache::tags('steam')->remember('steam-summary-'.$this->userId, self::DAY_IN_SECONDS, function (): array {
+            $summary = $this->createUserClient()->get('/ISteamUser/GetPlayerSummaries/v0002', [
                 'steamids' => $this->userId,
                 'key' => $this->apiKey,
-            ])->json('response.players.0');
+            ])->json('response.players.0') ?? [];
 
             return [
-                'nick' => $summary['personaname'],
-                'avatar' => $summary['avatar'],
-                'url' => $summary['profileurl'],
+                'nick' => Arr::get($summary, 'personaname', ''),
+                'avatar' => Arr::get($summary, 'avatar', ''),
+                'url' => Arr::get($summary, 'profileurl', ''),
                 'achievements' => 0,
             ];
         });
     }
 
-    private function getOwnedGamesTiming(): array
+    /**
+     * Raw Steam payload for every owned game, sorted by the most recently played first.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function getOwnedGamesPayload(): array
     {
-        return Cache::tags('steam')->remember('steam-owned-games-timing-'.$this->userId, 60 * 60, function () {
-            $clientUser = $this->createUserClient();
-
-            $owned = $clientUser->get('/IPlayerService/GetOwnedGames/v0001/', [
-                'steamid' => $this->userId,
-                'key' => $this->apiKey,
-                'format' => 'json',
-                'include_appinfo' => false,
-            ])->json('response');
-
-            $timing = [];
-            foreach ($owned['games'] ?? [] as $game) {
-                $timing[$game['appid']] = $game['rtime_last_played'];
-            }
-
-            return $timing;
-        });
-    }
-
-    private function getOwnedGames(): array
-    {
-        return Cache::tags('steam')->remember('steam-owned-games-'.$this->userId, 60 * 60, function () {
-            $clientUser = $this->createUserClient();
-
-            $owned = $clientUser->get('/IPlayerService/GetOwnedGames/v0001/', [
+        // See the note on the recently played cache about the version suffix.
+        return Cache::tags('steam')->remember('steam-owned-games-v2-'.$this->userId, self::HOUR_IN_SECONDS, function (): array {
+            $owned = $this->createUserClient()->get('/IPlayerService/GetOwnedGames/v0001/', [
                 'steamid' => $this->userId,
                 'key' => $this->apiKey,
                 'format' => 'json',
                 'include_appinfo' => true,
-            ])->json('response');
+            ])->json('response.games') ?? [];
 
-            $games = collect($owned['games'])->sortByDesc('rtime_last_played');
+            return collect($owned)->sortByDesc('rtime_last_played')->values()->all();
+        });
+    }
 
-            $ownedArray = $games->map(function ($game) {
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function getOwnedGames(): array
+    {
+        return collect($this->getOwnedGamesPayload())
+            ->map(function (array $game): array {
                 $appId = $game['appid'];
 
                 return [
                     'name' => $game['name'],
                     'steam_url' => $this->storeUrl.'/app/'.$appId,
-                    'icon_url' => 'https://media.steampowered.com/steamcommunity/public/images/apps/'.$appId.'/'.$game['img_icon_url'].'.jpg',
+                    'icon_url' => 'https://media.steampowered.com/steamcommunity/public/images/apps/'.$appId.'/'.Arr::get($game, 'img_icon_url', '').'.jpg',
                     'default_icon_url' => 'https://placehold.co/32x32?text='.Str::initials($game['name']),
                     'time' => [
-                        '2weeks' => $game['playtime_2weeks'] ?? 0,
-                        'total' => $game['playtime_forever'],
+                        '2weeks' => Arr::get($game, 'playtime_2weeks', 0),
+                        'total' => Arr::get($game, 'playtime_forever', 0),
                     ],
                 ];
-            })->values()->toArray();
-
-            return [
-                'owned' => $ownedArray,
-            ];
-        });
+            })
+            ->all();
     }
 
+    /**
+     * Last played timestamp per app id, derived from the owned games payload.
+     *
+     * @return array<int, int>
+     */
+    private function getLastPlayedTimestamps(): array
+    {
+        return collect($this->getOwnedGamesPayload())
+            ->mapWithKeys(fn (array $game): array => [$game['appid'] => Arr::get($game, 'rtime_last_played', 0)])
+            ->all();
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
     private function getRecentlyPlayedGames(): array
     {
-        $clientUser = $this->createUserClient();
-
-        $recently = Cache::tags('steam')->remember('steam-recently-played-'.$this->userId, 60 * 60, function () use ($clientUser) {
-            return $clientUser->get('/IPlayerService/GetRecentlyPlayedGames/v0001', [
+        // The suffix is bumped whenever the cached shape changes, so a deploy cannot pick up
+        // entries written by the previous release.
+        $games = Cache::tags('steam')->remember('steam-recently-played-v2-'.$this->userId, self::HOUR_IN_SECONDS, function (): array {
+            return $this->createUserClient()->get('/IPlayerService/GetRecentlyPlayedGames/v0001', [
                 'steamid' => $this->userId,
                 'key' => $this->apiKey,
                 'format' => 'json',
-            ])->json('response');
+            ])->json('response.games') ?? [];
         });
 
-        $games = $recently['games'] ?? [];
-        $appIds = collect($games)->pluck('appid')->all();
+        if ($games === []) {
+            return [];
+        }
 
-        // Fetch timing from owned games for sorting
-        $timingData = $this->getOwnedGamesTiming();
-
-        // Fetch player stats and game data in parallel
+        $appIds = Arr::pluck($games, 'appid');
+        $lastPlayedTimestamps = $this->getLastPlayedTimestamps();
         $playerStatsBatch = $this->fetchPlayerStatsBatch($appIds);
         $gameDataBatch = $this->fetchGameDataBatch($appIds);
 
-        $summary = $this->getSummary();
-        $recentlyGames = [];
+        $recentlyPlayedGames = [];
 
-        foreach ($games as $recentlyGame) {
-            $appId = $recentlyGame['appid'];
+        foreach ($games as $game) {
+            $appId = $game['appid'];
             $playerStats = $playerStatsBatch[$appId] ?? ['achievements' => []];
             $gameData = $gameDataBatch[$appId] ?? [];
-            $lastPlayed = $timingData[$appId] ?? 0;
 
-            $summary['achievements'] += count($playerStats['achievements'] ?? []);
-            $recentlyGames[] = [
-                'name' => $recentlyGame['name'],
+            $recentlyPlayedGames[] = [
+                'name' => $game['name'],
                 'time' => [
-                    '2weeks' => $recentlyGame['playtime_2weeks'],
-                    'total' => $recentlyGame['playtime_forever'],
+                    '2weeks' => Arr::get($game, 'playtime_2weeks', 0),
+                    'total' => Arr::get($game, 'playtime_forever', 0),
                 ],
                 'achievements' => [
-                    'current' => count($playerStats['achievements'] ?? []),
+                    'current' => count(Arr::get($playerStats, 'achievements', [])),
                     'total' => Arr::get($gameData, 'achievements.total', 0),
                 ],
                 'style' => [
-                    'image' => $gameData['header_image'] ?? null,
-                    'capsule_image' => $gameData['capsule_image'] ?? null,
-                    'capsule_imagev5' => $gameData['capsule_imagev5'] ?? null,
-                    'background' => $gameData['background'] ?? null,
-                    'background_raw' => $gameData['background_raw'] ?? null,
+                    'image' => Arr::get($gameData, 'header_image'),
+                    'capsule_image' => Arr::get($gameData, 'capsule_image'),
+                    'capsule_imagev5' => Arr::get($gameData, 'capsule_imagev5'),
+                    'background' => Arr::get($gameData, 'background'),
+                    'background_raw' => Arr::get($gameData, 'background_raw'),
                 ],
-                'website' => $gameData['website'] ?? null,
+                'website' => Arr::get($gameData, 'website'),
                 'steam_url' => $this->storeUrl.'/app/'.$appId,
-                'last_played' => $lastPlayed,
+                'last_played' => $lastPlayedTimestamps[$appId] ?? 0,
             ];
         }
 
-        return array_values(Arr::sortDesc($recentlyGames, 'last_played'));
+        return array_values(Arr::sortDesc($recentlyPlayedGames, 'last_played'));
     }
 
+    /**
+     * @param  list<int>  $appIds
+     * @return array<int, array<string, mixed>>
+     */
     private function fetchGameDataBatch(array $appIds): array
     {
-        if (empty($appIds)) {
-            return [];
-        }
-
-        $clientStore = $this->createStoreClient();
-        $result = [];
-
-        // Collect uncached IDs
-        $uncachedIds = [];
-        foreach ($appIds as $appId) {
-            $cacheKey = 'steam-game-'.$appId;
-            if (Cache::tags('steam')->has($cacheKey)) {
-                $result[$appId] = Cache::tags('steam')->get($cacheKey);
-            } else {
-                $uncachedIds[] = $appId;
-            }
-        }
-
-        if (empty($uncachedIds)) {
-            return $result;
-        }
-
-        // Process sequentially with delays to avoid rate limiting
-        foreach ($uncachedIds as $appId) {
-            try {
-                $response = $clientStore->get('/api/appdetails', [
-                    'appids' => $appId,
-                ]);
-                $gameData = $response->json($appId.'.data', []);
-                Cache::tags('steam')->put('steam-game-'.$appId, $gameData, 60 * 60 * 24);
-                $result[$appId] = $gameData;
-            } catch (Exception $e) {
-                $result[$appId] = [];
-            }
-
-            // Small delay between requests to avoid rate limiting
-            usleep(100000); // 100ms delay
-        }
-
-        return $result;
+        return $this->fetchCachedPerApp(
+            $appIds,
+            'steam-game-',
+            self::DAY_IN_SECONDS,
+            fn (int $appId): array => $this->createStoreClient()
+                ->get('/api/appdetails', ['appids' => $appId])
+                ->json($appId.'.data', []),
+            fallback: [],
+        );
     }
 
+    /**
+     * @param  list<int>  $appIds
+     * @return array<int, array<string, mixed>>
+     */
     private function fetchPlayerStatsBatch(array $appIds): array
     {
-        if (empty($appIds)) {
-            return [];
-        }
-
-        $clientUser = $this->createUserClient();
-        $result = [];
-
-        // Collect uncached IDs
-        $uncachedIds = [];
-        foreach ($appIds as $appId) {
-            $cacheKey = 'steam-player-stats-'.$appId;
-            if (Cache::tags('steam')->has($cacheKey)) {
-                $result[$appId] = Cache::tags('steam')->get($cacheKey);
-            } else {
-                $uncachedIds[] = $appId;
-            }
-        }
-
-        if (empty($uncachedIds)) {
-            return $result;
-        }
-
-        // Process sequentially with delays to avoid rate limiting
-        foreach ($uncachedIds as $appId) {
-            try {
-                $response = $clientUser->get('/ISteamUserStats/GetUserStatsForGame/v0002/', [
+        return $this->fetchCachedPerApp(
+            $appIds,
+            'steam-player-stats-',
+            self::HOUR_IN_SECONDS,
+            fn (int $appId): array => $this->createUserClient()
+                ->get('/ISteamUserStats/GetUserStatsForGame/v0002/', [
                     'steamid' => $this->userId,
                     'key' => $this->apiKey,
                     'appid' => $appId,
-                ]);
-                $playerStats = $response->throw()->json('playerstats', []);
-                Cache::tags('steam')->put('steam-player-stats-'.$appId, $playerStats, 60 * 60);
-                $result[$appId] = $playerStats;
-            } catch (Exception $e) {
-                $result[$appId] = ['achievements' => []];
+                ])
+                ->throw()
+                ->json('playerstats', []),
+            fallback: ['achievements' => []],
+        );
+    }
+
+    /**
+     * Resolve one cached value per app id, fetching the misses sequentially to stay
+     * under Steam's rate limits. Failures fall back instead of breaking the page.
+     *
+     * @param  list<int>  $appIds
+     * @param  callable(int): array<string, mixed>  $fetch
+     * @param  array<string, mixed>  $fallback
+     * @return array<int, array<string, mixed>>
+     */
+    private function fetchCachedPerApp(array $appIds, string $cacheKeyPrefix, int $ttl, callable $fetch, array $fallback): array
+    {
+        $result = [];
+        $uncachedAppIds = [];
+
+        foreach (array_unique($appIds) as $appId) {
+            $cached = Cache::tags('steam')->get($cacheKeyPrefix.$appId);
+
+            if ($cached === null) {
+                $uncachedAppIds[] = $appId;
+
+                continue;
             }
 
-            // Small delay between requests to avoid rate limiting
-            usleep(100000); // 100ms delay
+            $result[$appId] = $cached;
+        }
+
+        foreach ($uncachedAppIds as $index => $appId) {
+            try {
+                $value = $fetch($appId);
+                Cache::tags('steam')->put($cacheKeyPrefix.$appId, $value, $ttl);
+                $result[$appId] = $value;
+            } catch (Throwable) {
+                $result[$appId] = $fallback;
+            }
+
+            if ($index < count($uncachedAppIds) - 1) {
+                usleep(self::REQUEST_DELAY_IN_MICROSECONDS);
+            }
         }
 
         return $result;
     }
 
-    private function createUserClient(): PendingRequest|Factory
+    private function createUserClient(): PendingRequest
     {
         return Http::baseUrl($this->apiUrl)
             ->timeout(10)
-            ->retry(5);
+            ->retry(3, 100);
     }
 
-    private function createStoreClient(): PendingRequest|Factory
+    private function createStoreClient(): PendingRequest
     {
         return Http::baseUrl($this->storeUrl)
             ->timeout(10)
-            ->retry(5);
+            ->retry(3, 100);
     }
 }

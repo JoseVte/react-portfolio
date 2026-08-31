@@ -1,6 +1,5 @@
 import i18next from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import Backend from 'i18next-http-backend';
 import { initReactI18next } from 'react-i18next';
 
 const messages = {
@@ -54,6 +53,7 @@ const messages = {
             'about.paragraph-3':
                 'I am always seeking continuous learning and stay updated on the latest trends and advancements in the field of technology. I am passionate about exploring new technologies and finding innovative ways to enhance my skills.',
 
+            'projects.select-year': 'Select a year',
             'projects.description':
                 'I’ve worked on tons of little projects over the years but these are the ones that I’m most proud of. Many of them are open-source, so if you see something that piques your interest, check out the code and contribute if you have ideas for how it can be improved.',
 
@@ -95,7 +95,7 @@ const messages = {
             'steam.description': 'My small collection of Steam games that I have acquired over the years.',
 
             'recently-played': 'Recently played',
-            'owned-games': 'Owned  games',
+            'owned-games': 'Owned games',
             'played-2-weeks': 'Last 2 weeks',
             'played-total': 'Total',
 
@@ -128,7 +128,7 @@ const messages = {
 
             'nav.about': 'Acerca de',
             'nav.projects': 'Proyectos',
-            'nav.menu': 'Menu',
+            'nav.menu': 'Menú',
             'nav.navigation': 'Índice',
             'nav.more': 'Más',
 
@@ -155,6 +155,7 @@ const messages = {
             'about.paragraph-3':
                 'Siempre busco el aprendizaje continuo y mantenerme actualizado sobre las últimas tendencias y avances en el campo de la tecnología. Me apasiona explorar nuevas tecnologías y encontrar formas innovadoras de mejorar mis habilidades.',
 
+            'projects.select-year': 'Selecciona un año',
             'projects.description':
                 'He trabajado en toneladas de pequeños proyectos a lo largo de los años, pero estos son de los que estoy más orgulloso. Muchos de ellos son de código abierto, por lo que si ve algo que despierta su interés, consulte el código y contribuya si tiene ideas sobre cómo se puede mejorar.',
 
@@ -177,11 +178,14 @@ const messages = {
 
             'week.1': 'Lun',
             'week.2': 'Mar',
-            'week.3': 'Mie',
+            'week.3': 'Mié',
             'week.4': 'Jue',
             'week.5': 'Vie',
-            'week.6': 'Sab',
+            'week.6': 'Sáb',
             'week.7': 'Dom',
+
+            more: 'Más',
+            less: 'Menos',
 
             'calendar.tooltip': '{{count}} actividades en {{date}}',
             'calendar.total': '{{count}} actividades en {{year}}',
@@ -207,15 +211,15 @@ const messages = {
 
 i18next
     .use(initReactI18next)
-    .use(Backend)
     .use(LanguageDetector)
     .init({
         resources: messages,
-        fallbackLng: ['es', 'en'],
+        supportedLngs: ['en', 'es'],
+        nonExplicitSupportedLngs: true,
+        fallbackLng: 'en',
         interpolation: {
             escapeValue: false,
         },
-        saveMissing: true,
     });
 
 export default i18next;

@@ -14,17 +14,14 @@ export default defineConfig({
         react(),
         tailwindcss(),
     ],
-    esbuild: {
-        jsx: 'automatic',
-    },
     build: {
-        target: ['esnext', 'chrome61', 'firefox60', 'safari11'],
+        // Sourcemaps stay public on purpose: Sentry fetches them to symbolicate frontend errors.
         sourcemap: true,
         minify: true,
     },
     resolve: {
         alias: {
-            'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
+            'ziggy-js': resolve(import.meta.dirname, 'vendor/tightenco/ziggy'),
         },
     },
     ssr: {

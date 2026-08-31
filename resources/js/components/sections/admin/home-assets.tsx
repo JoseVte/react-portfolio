@@ -3,7 +3,7 @@ import DeleteImageModal from '@/components/sections/admin/delete-image-modal';
 import UploadImageModal from '@/components/sections/admin/upload-image-modal';
 import { Category, Image } from '@/types';
 import { Button } from 'flowbite-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
 
 export default function HomeAssets() {
@@ -16,7 +16,7 @@ export default function HomeAssets() {
 
     const uploadedImage = () => {
         setIsShowModal(false);
-        refresh().then();
+        void refresh();
     };
     const openModalImage = (image: Image) => {
         setPreviewImage(image);
@@ -25,26 +25,19 @@ export default function HomeAssets() {
     const deletedImage = () => {
         toast.success('Deleted "' + previewImage?.original_name + '"');
         setIsShowModalImage(false);
-        refresh().then();
+        void refresh();
     };
 
-    const refreshImages = () =>
-        fetch(route('assets.index'))
-            .then((res) => res.json())
-            .then((res) => setImagesByCategory(res));
-    const refreshCategories = () =>
-        fetch(route('categories'))
-            .then((res) => res.json())
-            .then((res) => setCategories(res));
+    const refresh = useCallback(async () => {
+        const [categoriesResponse, imagesResponse] = await Promise.all([fetch(route('categories')), fetch(route('assets.index'))]);
 
-    const refresh = async () => {
-        await refreshCategories();
-        await refreshImages();
-    };
+        setCategories(await categoriesResponse.json());
+        setImagesByCategory(await imagesResponse.json());
+    }, []);
 
     useEffect(() => {
-        refresh().then();
-    }, []);
+        void refresh();
+    }, [refresh]);
 
     return (
         <>
@@ -77,9 +70,9 @@ export default function HomeAssets() {
                             {category}
                         </h2>
                         <ul role="list" className="grid grid-cols-1 gap-x-12 gap-y-16 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                            {images.map((image, index) => (
+                            {images.map((image) => (
                                 <li
-                                    key={index}
+                                    key={image.id}
                                     className="group relative flex cursor-pointer flex-col items-start"
                                     onClick={() => openModalImage(image)}
                                 >

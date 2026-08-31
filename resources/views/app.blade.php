@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') === 'dark'])>
     <head>
-        @PwaHead
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        {{-- Manifest, apple-touch-icon and theme-color for the PWA --}}
+        @PwaHead
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
@@ -31,20 +33,16 @@
             }
         </style>
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title data-inertia>{{ config('app.name', 'Laravel') }}</title>
 
-        <link rel="icon" href="{{ asset('/favicon.ico') }}" sizes="32x32" />
-        <link rel="icon" href="{{ asset('/favicon.jpeg') }}" sizes="50x50" type="image/jpeg">
-        <link rel="icon" href="{{ asset('/favicon.webp') }}" sizes="50x50" type="image/webp">
-        <link rel="apple-touch-icon" href="{{ asset('logo-512x512.webp') }}">
+        <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="32x32">
+        <link rel="icon" href="{{ asset('icons/icon-192.png') }}" sizes="192x192" type="image/png">
+        <link rel="icon" href="{{ asset('favicon.webp') }}" sizes="50x50" type="image/webp">
+        <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon-180.png') }}" sizes="180x180">
 
-        <link rel="preconnect" href="https://cdn.jsdelivr.net">
-        <link rel="stylesheet" type='text/css' href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
-
-        <meta name="theme-color" content="#ffffff">
-
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet">
 
         @routes
         @viteReactRefresh

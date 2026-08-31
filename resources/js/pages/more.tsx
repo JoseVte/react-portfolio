@@ -1,5 +1,6 @@
 import Container from '@/components/container';
 import LazyImg from '@/components/lazy-img';
+import Marquee from '@/components/marquee';
 import { useAppearance } from '@/hooks/use-appearance';
 import DefaultLayout from '@/layouts/default-layout';
 import { PlayroomGame, SteamInfo } from '@/types';
@@ -7,7 +8,6 @@ import { nl2br } from '@/utils';
 import { Head } from '@inertiajs/react';
 import { Modal, ModalBody, ModalHeader } from 'flowbite-react';
 import { useEffect, useState } from 'react';
-import Marquee from 'react-fast-marquee';
 import { useTranslation } from 'react-i18next';
 import { Tooltip } from 'react-tooltip';
 
@@ -25,15 +25,25 @@ export default function More() {
     const [playroomGameModal, setPlayroomGameModal] = useState<PlayroomGame>();
 
     useEffect(() => {
-        fetch(route('steam'))
-            .then((res) => res.json())
-            .then((data: SteamInfo) => setSteam(data));
+        const controller = new AbortController();
+
+        fetch(route('steam'), { signal: controller.signal })
+            .then((response) => response.json())
+            .then((data: SteamInfo) => setSteam(data))
+            .catch(() => undefined);
+
+        return () => controller.abort();
     }, []);
 
     useEffect(() => {
-        fetch(route('playroom'))
-            .then((res) => res.json())
-            .then((data: PlayroomGame[]) => setPlayroomGames(data));
+        const controller = new AbortController();
+
+        fetch(route('playroom'), { signal: controller.signal })
+            .then((response) => response.json())
+            .then((data: PlayroomGame[]) => setPlayroomGames(data))
+            .catch(() => undefined);
+
+        return () => controller.abort();
     }, []);
 
     const openDetailGame = (game: PlayroomGame) => {
@@ -69,8 +79,8 @@ export default function More() {
                     <div className="text-lg">{t('playroom.description')}</div>
 
                     <div className="flex flex-wrap gap-4">
-                        {playroomGames.map((game, index) => (
-                            <div key={index} className="relative cursor-pointer rounded" onClick={() => openDetailGame(game)}>
+                        {playroomGames.map((game) => (
+                            <div key={game.id} className="relative cursor-pointer rounded" onClick={() => openDetailGame(game)}>
                                 <LazyImg image={game.image_url} preImage={game.image_url} alt={game.name} className="size-32 rounded object-cover" />
                             </div>
                         ))}
@@ -83,11 +93,7 @@ export default function More() {
                             </ModalHeader>
                             <ModalBody>
                                 <div className="mx-auto w-full flex-none overflow-hidden rounded-xl bg-zinc-100 sm:rounded-2xl dark:bg-zinc-800">
-                                    <img
-                                        src={playroomGameModal.image_url}
-                                        className="max-h-80 w-full object-contain filter-none!"
-                                        alt={playroomGameModal.name}
-                                    />
+                                    <img src={playroomGameModal.image_url} className="max-h-80 w-full object-contain" alt={playroomGameModal.name} />
                                 </div>
 
                                 <div className="my-4 w-auto">
@@ -110,8 +116,8 @@ export default function More() {
                     <h3 className="text-xl font-semibold text-zinc-700 sm:text-2xl dark:text-zinc-200">{t('recently-played')}</h3>
 
                     <div className="grid grid-cols-3 gap-4">
-                        {steam?.recently_games?.map((game, index) => (
-                            <div key={index} className="group relative rounded">
+                        {steam?.recently_games?.map((game) => (
+                            <div key={game.steam_url} className="group relative rounded">
                                 <LazyImg image={game.style.image} preImage={game.style.capsule_image} alt={game.name} className="rounded" />
 
                                 <div className="absolute inset-0 hidden items-center justify-center rounded bg-[rgba(0,0,0,0.6)] group-hover:flex">
@@ -127,15 +133,17 @@ export default function More() {
                                     </a>
                                 </div>
 
-                                <div className="absolute right-4 bottom-2 left-4 hidden h-1.5 rounded bg-gray-500 group-hover:block">
-                                    <div
-                                        className="h-full rounded"
-                                        style={{
-                                            backgroundColor: game.achievements.current === game.achievements.total ? 'yellow' : 'orange',
-                                            width: (game.achievements.current / game.achievements.total) * 100 + '%',
-                                        }}
-                                    ></div>
-                                </div>
+                                {game.achievements.total > 0 && (
+                                    <div className="absolute right-4 bottom-2 left-4 hidden h-1.5 rounded bg-gray-500 group-hover:block">
+                                        <div
+                                            className="h-full rounded"
+                                            style={{
+                                                backgroundColor: game.achievements.current >= game.achievements.total ? 'yellow' : 'orange',
+                                                width: Math.min(100, (game.achievements.current / game.achievements.total) * 100) + '%',
+                                            }}
+                                        ></div>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -143,9 +151,9 @@ export default function More() {
                     <h3 className="text-xl font-semibold text-zinc-700 sm:text-2xl dark:text-zinc-200">{t('owned-games')}</h3>
 
                     <div className="flex flex-wrap justify-between gap-4">
-                        {steam?.owned_games?.map((game, key) => (
+                        {steam?.owned_games?.map((game) => (
                             <a
-                                key={key}
+                                key={game.steam_url}
                                 data-tooltip-id="owned-game-tooltip"
                                 data-tooltip-content={game.name}
                                 data-tooltip-time-2weeks={(game.time['2weeks'] / 60).toFixed(2)}

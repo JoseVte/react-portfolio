@@ -6,58 +6,47 @@ use App\Enums\ImageCategory;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AssetRequest;
 use App\Models\Image;
+use App\Services\ImageUploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use League\Flysystem\FilesystemException;
-use Storage;
 
 class AssetController extends Controller
 {
+    public function __construct(private readonly ImageUploadService $imageUploadService) {}
+
     public function index(): JsonResponse
     {
-        return response()->json(Image::whereNotIn('category', [ImageCategory::PLAYROOM->value])->get()->groupBy('category'));
+        $images = Image::query()
+            ->whereNot('category', ImageCategory::PLAYROOM->value)
+            ->orderBy('category')
+            ->orderBy('id')
+            ->get()
+            ->groupBy(fn (Image $image): string => $image->category->value);
+
+        return response()->json($images);
     }
 
-    public function byCategory(string $category): JsonResponse
+    public function byCategory(ImageCategory $category): JsonResponse
     {
-        return response()->json(Image::where('category', $category)->get());
+        return response()->json(
+            Image::query()->where('category', $category->value)->orderBy('id')->get()
+        );
     }
 
-    /**
-     * @throws FilesystemException
-     */
     public function store(AssetRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
-
-        $file = $request->file('file') ?: $request->get('file');
-        $extension = $file->clientExtension();
-
-        $fileCount = 1;
-        if (Storage::has($validated['category'])) {
-            $fileCount += count(Storage::listContents($validated['category'])->toArray());
-        }
-
-        while (Storage::has($validated['category'].'/'.$fileCount.'.'.$extension)) {
-            $fileCount++;
-        }
-
-        $path = $validated['category'].'/'.$fileCount.'.'.$extension;
-        Storage::put($path, $file->getContent());
-
-        Image::create([
-            'category' => $validated['category'],
-            'name' => $fileCount.'.'.$extension,
-            'original_name' => $file->getClientOriginalName(),
-            'mimetype' => $file->getMimeType(),
-            'path' => $path,
-        ]);
+        $this->imageUploadService->store(
+            $request->file('file'),
+            ImageCategory::from($request->validated('category')),
+        );
 
         return back();
     }
 
-    public function delete(string $category, Image $image): RedirectResponse
+    public function delete(ImageCategory $category, Image $image): RedirectResponse
     {
+        abort_unless($image->category === $category, 404);
+
         $image->delete();
 
         return back();
