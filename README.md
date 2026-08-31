@@ -154,11 +154,15 @@ Pushing to `main` runs `.github/workflows/deploy.yml`, which:
 
 ### Required secrets
 
-Secrets: `SSH_PRIVATE_KEY`, `SSH_USER`, `SSH_HOST`, `SSH_KNOWN_HOSTS` (from
-`ssh-keyscan -H <host>`), `DEPLOY_PATH`, `FORGE_DEPLOY_URL` and optionally `HEALTHCHECK_URL`.
+Secrets: `SSH_PRIVATE_KEY`, `SSH_USER`, `SSH_HOST`, `DEPLOY_PATH`, `FORGE_DEPLOY_URL` and
+optionally `HEALTHCHECK_URL`.
 
-`SSH_HOST` is the server IP, not the domain: the domain sits behind Cloudflare and port 22 is
-not reachable through it.
+`SSH_HOST` has to be reachable on port 22. The public domain is not: it sits behind Cloudflare.
+
+There is no `SSH_KNOWN_HOSTS` secret. The workflow reads the host key from the server at deploy
+time and checks it against fingerprints pinned in `deploy.yml`, so it does not depend on the host
+being spelled the same way in two places. Host key fingerprints are public by design. If the
+server is ever rebuilt, update those three lines and the deploy will fail loudly until you do.
 
 Variables: the nine `VITE_*` keys described under
 [Client side configuration](#client-side-configuration).
