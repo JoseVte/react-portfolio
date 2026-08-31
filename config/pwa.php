@@ -4,8 +4,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Would you like the install button to appear on all pages?
-      Set true/false
+    | Install Button
+    |--------------------------------------------------------------------------
+    | Whether the package renders its own floating "install app" button.
+    | The browser's native install prompt is used instead.
     |--------------------------------------------------------------------------
     */
 
@@ -15,46 +17,39 @@ return [
     |--------------------------------------------------------------------------
     | PWA Manifest Configuration
     |--------------------------------------------------------------------------
-    |  php artisan erag:pwa-update-manifest
+    | Keep this in sync with public/manifest.json, which is the file the browser
+    | actually reads. Run `php artisan erag:pwa-update-manifest` to regenerate it.
+    |--------------------------------------------------------------------------
     */
 
     'manifest' => [
-        'name' => env('APP_NAME'),
+        'name' => 'Jose Vicente - Web developer',
         'short_name' => 'Josrom',
+        'id' => '/',
+        'scope' => '/',
         'background_color' => '#18181b',
-        'display' => 'fullscreen',
+        'display' => 'standalone',
+        'orientation' => 'any',
         'description' => 'Web developer, Hiker, Cat Lover and Board/Card Game Enjoyer.',
-        'theme_color' => '#ffffff',
+        'theme_color' => '#18181b',
         'icons' => [
             [
-                'src' => 'logo-512x512.jpeg',
+                'src' => 'icons/icon-192.png',
+                'sizes' => '192x192',
+                'type' => 'image/png',
+                'purpose' => 'any',
+            ],
+            [
+                'src' => 'icons/icon-512.png',
                 'sizes' => '512x512',
-                'type' => 'image/jpeg',
+                'type' => 'image/png',
+                'purpose' => 'any',
             ],
             [
-                'src' => 'logo-128x128.jpeg',
-                'sizes' => '128x128',
-                'type' => 'image/jpeg',
-            ],
-            [
-                'src' => 'favicon.jpeg',
-                'sizes' => '50x50',
-                'type' => 'image/jpeg',
-            ],
-            [
-                'src' => 'logo-512x512.webp',
+                'src' => 'icons/icon-maskable-512.png',
                 'sizes' => '512x512',
-                'type' => 'image/webp',
-            ],
-            [
-                'src' => 'logo-128x128.webp',
-                'sizes' => '128x128',
-                'type' => 'image/webp',
-            ],
-            [
-                'src' => 'favicon.webp',
-                'sizes' => '50x50',
-                'type' => 'image/webp',
+                'type' => 'image/png',
+                'purpose' => 'maskable',
             ],
         ],
     ],
@@ -63,7 +58,8 @@ return [
     |--------------------------------------------------------------------------
     | Debug Configuration
     |--------------------------------------------------------------------------
-    | Toggles the application's debug mode based on the environment variable
+    | Logs service worker registration results to the browser console.
+    |--------------------------------------------------------------------------
     */
 
     'debug' => env('APP_DEBUG', false),
@@ -72,8 +68,6 @@ return [
     |--------------------------------------------------------------------------
     | Livewire Integration
     |--------------------------------------------------------------------------
-    | Set to true if you're using Livewire in your application to enable
-    | Livewire-specific PWA optimizations or features.
     */
 
     'livewire-app' => false,

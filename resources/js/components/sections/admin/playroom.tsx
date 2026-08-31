@@ -5,7 +5,7 @@ import { PlayroomGame } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { Button } from 'flowbite-react';
 import _ from 'lodash';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
 import { ReactSortable } from 'react-sortablejs';
 
@@ -26,7 +26,7 @@ export default function Playroom() {
 
     const uploadedGame = () => {
         setIsShowModal(false);
-        refresh().then();
+        void refresh();
     };
     const openModalGame = (game: PlayroomGame) => {
         setPreviewGame(game);
@@ -37,14 +37,14 @@ export default function Playroom() {
         toast.success('Updated "' + previewGame?.name + '"');
         setIsShowModalGame(false);
         setPreviewGame(undefined);
-        refresh().then();
+        void refresh();
     };
 
     const deletedGame = () => {
         toast.success('Deleted "' + previewGame?.name + '"');
         setIsShowModalGame(false);
         setPreviewGame(undefined);
-        refresh().then();
+        void refresh();
     };
 
     const saveGames = (sortedGames: PlayroomGame[]) => {
@@ -52,23 +52,20 @@ export default function Playroom() {
         setData({ id: sortedGames.map((game) => game.id) });
         put(route('playroom.sort'), {
             onFinish: () => {
-                refresh().then();
+                void refresh();
             },
         });
     };
 
-    const refreshPlayroom = () =>
-        fetch(route('playroom.index'))
-            .then((res) => res.json())
-            .then((res) => setGames(res));
+    const refresh = useCallback(async () => {
+        const response = await fetch(route('playroom.index'));
 
-    const refresh = async () => {
-        await refreshPlayroom();
-    };
+        setGames(await response.json());
+    }, []);
 
     useEffect(() => {
-        refresh().then();
-    }, []);
+        void refresh();
+    }, [refresh]);
 
     return (
         <>
@@ -115,8 +112,12 @@ export default function Playroom() {
                         setList={saveGames}
                         className="grid grid-cols-1 gap-x-12 gap-y-16 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
                     >
-                        {games.map((game, index) => (
-                            <div key={index} className="group relative flex cursor-pointer flex-col items-start" onClick={() => openModalGame(game)}>
+                        {games.map((game) => (
+                            <div
+                                key={game.id}
+                                className="group relative flex cursor-pointer flex-col items-start"
+                                onClick={() => openModalGame(game)}
+                            >
                                 <div className="relative mx-auto flex-none overflow-hidden rounded-xl bg-zinc-100 sm:rounded-2xl dark:bg-zinc-800">
                                     <LazyImg
                                         width={192}

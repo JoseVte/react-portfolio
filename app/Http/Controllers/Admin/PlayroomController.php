@@ -2,128 +2,86 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ImageCategory;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\PlayroomGameRequest;
 use App\Models\Image;
 use App\Models\PlayroomGame;
-use Arr;
-use DB;
+use App\Services\ImageUploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use League\Flysystem\FilesystemException;
-use Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
 
-class PlayroomController
+class PlayroomController extends Controller
 {
+    public function __construct(private readonly ImageUploadService $imageUploadService) {}
+
     public function index(): JsonResponse
     {
         return response()->json(PlayroomGame::ordered()->get());
     }
 
-    /**
-     * @throws FilesystemException
-     */
     public function store(PlayroomGameRequest $request): RedirectResponse
     {
-        [$validated, $category, $file, $extension, $fileCount, $path] = $this->generatePath($request);
+        $uploadedImage = null;
 
         try {
-            DB::transaction(function () use ($validated, $extension, $fileCount, $category, $file, $path) {
-                Storage::put($path, $file->getContent());
-
-                $image = Image::create([
-                    'category' => $category,
-                    'name' => $fileCount.'.'.$extension,
-                    'original_name' => $file->getClientOriginalName(),
-                    'mimetype' => $file->getMimeType(),
-                    'path' => $path,
-                ]);
+            DB::transaction(function () use ($request, &$uploadedImage): void {
+                $uploadedImage = $this->imageUploadService->store($request->file('file'), ImageCategory::PLAYROOM);
 
                 PlayroomGame::create([
-                    'name' => $validated['name'],
-                    'description_en' => Arr::get($validated, 'description_en') ?? '',
-                    'description_es' => Arr::get($validated, 'description_es') ?? '',
-                    'category_en' => Arr::get($validated, 'category_en', ''),
-                    'category_es' => Arr::get($validated, 'category_es', ''),
-                    'image_id' => $image->id,
+                    ...$this->attributesFrom($request),
+                    'image_id' => $uploadedImage->id,
                 ]);
             });
-
-            return back();
-        } catch (Throwable $e) {
-            report($e);
-
-            if (Storage::exists($path)) {
-                Storage::delete($path);
-            }
-
-            return back()->with('error', 'Error saving game');
+        } catch (Throwable $throwable) {
+            return $this->rollback($throwable, $uploadedImage);
         }
-    }
-
-    /**
-     * @throws FilesystemException
-     */
-    public function update(PlayroomGameRequest $request, PlayroomGame $game): RedirectResponse
-    {
-        [$validated, $category, $file, $extension, $fileCount, $path] = $this->generatePath($request);
-
-        try {
-            DB::transaction(function () use ($game, $validated, $extension, $fileCount, $category, $file, $path) {
-                $game->update([
-                    'name' => $validated['name'],
-                    'description_en' => Arr::get($validated, 'description_en') ?? '',
-                    'description_es' => Arr::get($validated, 'description_es') ?? '',
-                    'category_en' => Arr::get($validated, 'category_en', ''),
-                    'category_es' => Arr::get($validated, 'category_es', ''),
-                ]);
-
-                if ($path) {
-                    $oldImage = $game->image;
-
-                    Storage::put($path, $file->getContent());
-
-                    $image = Image::create([
-                        'category' => $category,
-                        'name' => $fileCount.'.'.$extension,
-                        'original_name' => $file->getClientOriginalName(),
-                        'mimetype' => $file->getMimeType(),
-                        'path' => $path,
-                    ]);
-
-                    $game->update([
-                        'image_id' => $image->id,
-                    ]);
-
-                    $oldImage->delete();
-                }
-            });
-
-            return back();
-        } catch (Throwable $e) {
-            report($e);
-
-            if ($path && Storage::exists($path)) {
-                Storage::delete($path);
-            }
-
-            return back()->with('error', 'Error saving game');
-        }
-    }
-
-    public function sort(Request $request): RedirectResponse
-    {
-        $ids = $request->validate(['id' => ['required', 'array']])['id'];
-
-        PlayroomGame::setNewOrder($ids);
 
         return back();
     }
 
-    /**
-     * @throws FilesystemException
-     */
+    public function update(PlayroomGameRequest $request, PlayroomGame $game): RedirectResponse
+    {
+        $uploadedImage = null;
+
+        try {
+            DB::transaction(function () use ($request, $game, &$uploadedImage): void {
+                $game->update($this->attributesFrom($request));
+
+                if (! $request->hasFile('file')) {
+                    return;
+                }
+
+                $previousImage = $game->image;
+                $uploadedImage = $this->imageUploadService->store($request->file('file'), ImageCategory::PLAYROOM);
+
+                $game->update(['image_id' => $uploadedImage->id]);
+
+                $previousImage?->delete();
+            });
+        } catch (Throwable $throwable) {
+            return $this->rollback($throwable, $uploadedImage);
+        }
+
+        return back();
+    }
+
+    public function sort(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'id' => ['required', 'array'],
+            'id.*' => ['required', 'integer', 'exists:playroom_games,id'],
+        ]);
+
+        PlayroomGame::setNewOrder($validated['id']);
+
+        return back();
+    }
+
     public function delete(PlayroomGame $game): RedirectResponse
     {
         $game->delete();
@@ -132,30 +90,30 @@ class PlayroomController
     }
 
     /**
-     * @throws FilesystemException
+     * The database transaction is rolled back for us, the uploaded file is not.
      */
-    public function generatePath(PlayroomGameRequest $request): array
+    private function rollback(Throwable $throwable, ?Image $uploadedImage): RedirectResponse
     {
-        $validated = $request->validated();
-        $category = 'playroom';
-        $file = $extension = $path = null;
-        $fileCount = 1;
+        report($throwable);
 
-        $file = $request->file('file') ?: $request->get('file');
-        if ($file) {
-            $extension = $file->clientExtension();
-
-            if (Storage::has($category)) {
-                $fileCount += count(Storage::listContents($category)->toArray());
-            }
-
-            while (Storage::has($category.'/'.$fileCount.'.'.$extension)) {
-                $fileCount++;
-            }
-
-            $path = $category.'/'.$fileCount.'.'.$extension;
+        if ($uploadedImage !== null && Storage::exists($uploadedImage->path)) {
+            Storage::delete($uploadedImage->path);
         }
 
-        return [$validated, $category, $file, $extension, $fileCount, $path];
+        return back()->with('error', 'Error saving game');
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function attributesFrom(PlayroomGameRequest $request): array
+    {
+        return [
+            'name' => $request->validated('name'),
+            'description_en' => $request->validated('description_en') ?? '',
+            'description_es' => $request->validated('description_es') ?? '',
+            'category_en' => $request->validated('category_en'),
+            'category_es' => $request->validated('category_es'),
+        ];
     }
 }

@@ -2,6 +2,11 @@
 
 use App\Models\Image;
 use App\Models\PlayroomGame;
+use Illuminate\Support\Facades\Storage;
+
+beforeEach(function () {
+    fakeDisk();
+});
 
 it('can create a playroom game', function () {
     $image = Image::factory()->create();
@@ -13,7 +18,6 @@ it('can create a playroom game', function () {
         'category_es' => 'Educativo',
         'category_en' => 'Educational',
         'image_id' => $image->id,
-        'order' => 1,
     ]);
 
     expect($game)->toBeInstanceOf(PlayroomGame::class)
@@ -28,61 +32,41 @@ it('can create a playroom game', function () {
 });
 
 it('can update a playroom game', function () {
-    $image = Image::factory()->create();
-    $game = PlayroomGame::factory()->create(['image_id' => $image->id]);
-
+    $game = PlayroomGame::factory()->create();
     $newImage = Image::factory()->create();
 
     $game->update([
         'name' => 'Updated Game',
-        'description_es' => 'Descripción actualizada',
         'description_en' => 'Updated description',
-        'category_es' => 'Diversión',
         'category_en' => 'Fun',
         'image_id' => $newImage->id,
-        'order' => 5,
     ]);
 
-    $game->refresh();
-
-    expect($game->name)->toBe('Updated Game')
-        ->and($game->description_es)->toBe('Descripción actualizada')
-        ->and($game->description_en)->toBe('Updated description')
-        ->and($game->category_es)->toBe('Diversión')
-        ->and($game->category_en)->toBe('Fun')
-        ->and($game->image_id)->toBe($newImage->id)
-        ->and($game->order)->toBe(5);
-});
-
-it('can delete a playroom game', function () {
-    $image = Image::factory()->create();
-    $game = PlayroomGame::factory()->create(['image_id' => $image->id]);
-
-    $gameId = $game->id;
-    $game->delete();
-
-    expect(PlayroomGame::find($gameId))->toBeNull();
+    expect($game->fresh())
+        ->name->toBe('Updated Game')
+        ->description_en->toBe('Updated description')
+        ->category_en->toBe('Fun')
+        ->image_id->toBe($newImage->id);
 });
 
 it('belongs to an image', function () {
     $image = Image::factory()->create();
-    $game = PlayroomGame::factory()->create(['image_id' => $image->id]);
+    $game = PlayroomGame::factory()->for($image)->create();
 
     expect($game->image)->toBeInstanceOf(Image::class)
         ->and($game->image->id)->toBe($image->id);
 });
 
-it('has image url attribute', function () {
-    $image = Image::factory()->create();
-    $game = PlayroomGame::factory()->create(['image_id' => $image->id]);
+it('exposes an image url attribute pointing at the assets route', function () {
+    $game = PlayroomGame::factory()->create();
 
-    expect($game->image_url)->toContain('assets')
-        ->and($game->image_url)->toContain($image->path);
+    expect($game->image_url)
+        ->toContain('assets')
+        ->toContain($game->image->path);
 });
 
-it('loads image with game by default', function () {
-    $image = Image::factory()->create();
-    $game = PlayroomGame::factory()->create(['image_id' => $image->id]);
+it('eager loads its image by default', function () {
+    $game = PlayroomGame::factory()->create();
 
     $loadedGame = PlayroomGame::find($game->id);
 
@@ -90,48 +74,48 @@ it('loads image with game by default', function () {
         ->and($loadedGame->image)->toBeInstanceOf(Image::class);
 });
 
-it('mass assigns playroom game fields', function () {
-    $image = Image::factory()->create();
+it('hides the raw image relation from serialization', function () {
+    $game = PlayroomGame::factory()->create();
 
-    $game = PlayroomGame::create([
-        'name' => 'Puzzle',
-        'description_es' => 'Rompecabezas',
-        'description_en' => 'Puzzle Game',
-        'category_es' => 'Lógica',
-        'category_en' => 'Logic',
-        'image_id' => $image->id,
-        'order' => 2,
-    ]);
-
-    expect($game)->toBeInstanceOf(PlayroomGame::class)
-        ->and($game->name)->toBe('Puzzle');
+    expect($game->toArray())
+        ->not->toHaveKey('image')
+        ->not->toHaveKey('image_id')
+        ->toHaveKey('image_url');
 });
 
-it('can create multiple playroom games', function () {
-    $images = Image::factory()->count(3)->create();
+it('deletes the related image and its file when the game is deleted', function () {
+    $image = imageWithFile();
+    $game = PlayroomGame::factory()->for($image)->create();
 
-    $games = PlayroomGame::factory()
-        ->count(3)
-        ->sequence(
-            ['image_id' => $images[0]->id, 'order' => 1],
-            ['image_id' => $images[1]->id, 'order' => 2],
-            ['image_id' => $images[2]->id, 'order' => 3],
-        )
-        ->create();
-
-    expect($games->count())->toBe(3)
-        ->and(PlayroomGame::count())->toBe(3)
-        ->and(PlayroomGame::where('order', 1)->first()->image_id)->toBe($images[0]->id);
-});
-
-it('deletes related image when game is deleted', function () {
-    $image = Image::factory()->create();
-    $game = PlayroomGame::factory()->create(['image_id' => $image->id]);
-
-    $gameId = $game->id;
-    $imageId = $image->id;
     $game->delete();
 
-    expect(PlayroomGame::find($gameId))->toBeNull()
-        ->and(Image::find($imageId))->toBeNull();
+    expect(PlayroomGame::find($game->id))->toBeNull()
+        ->and(Image::find($image->id))->toBeNull();
+    Storage::assertMissing($image->path);
+});
+
+it('cascades the deletion of an image to its game', function () {
+    $image = imageWithFile();
+    $game = PlayroomGame::factory()->for($image)->create();
+
+    $image->delete();
+
+    expect(PlayroomGame::find($game->id))->toBeNull();
+});
+
+it('assigns an incrementing order on creation', function () {
+    $first = PlayroomGame::factory()->create();
+    $second = PlayroomGame::factory()->create();
+
+    expect($second->order)->toBe($first->order + 1)
+        ->and(PlayroomGame::ordered()->pluck('id')->all())->toBe([$first->id, $second->id]);
+});
+
+it('can be reordered', function () {
+    $games = PlayroomGame::factory()->count(3)->create();
+    $reversedIds = $games->pluck('id')->reverse()->values()->all();
+
+    PlayroomGame::setNewOrder($reversedIds);
+
+    expect(PlayroomGame::ordered()->pluck('id')->all())->toBe($reversedIds);
 });

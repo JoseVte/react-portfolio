@@ -2,7 +2,7 @@ import InputAutocomplete from '@/components/input-autocomplete';
 import InputError from '@/components/input-error';
 import { useForm } from '@inertiajs/react';
 import { Button, FileInput, Label, Modal, ModalBody, ModalFooter, ModalHeader, Textarea, TextInput } from 'flowbite-react';
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 
 interface UploadPlayroomModalProps {
     categoriesEn: Array<string>;
@@ -30,14 +30,23 @@ export default function AttachGameModal({ categoriesEn, categoriesEs, onUploaded
 
     const [previewUrl, setPreviewUrl] = useState('');
 
-    const getPreview = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target?.files ? e.target?.files[0] : null;
-        if (file) {
-            setPreviewUrl(URL.createObjectURL(file));
+    // Object URLs stay alive until revoked, so release the previous one on every change.
+    useEffect(() => {
+        if (!previewUrl) {
+            return;
         }
+
+        return () => URL.revokeObjectURL(previewUrl);
+    }, [previewUrl]);
+
+    const pickFile = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+
+        setData('file', file ?? undefined);
+        setPreviewUrl(file ? URL.createObjectURL(file) : '');
     };
 
-    const submitForm = (e: React.SubmitEvent<HTMLFormElement>) => {
+    const submitForm = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         post(route('playroom.store'), {
             onSuccess: onUploaded,
@@ -129,7 +138,7 @@ export default function AttachGameModal({ categoriesEn, categoriesEs, onUploaded
                     {previewUrl && (
                         <div id="preview" className="mb-5">
                             <div className="relative mx-auto aspect-9/10 h-48 flex-none overflow-hidden rounded-xl bg-zinc-100 sm:rounded-2xl dark:bg-zinc-800">
-                                <img src={previewUrl} className="absolute inset-0 h-full w-full object-cover filter-none!" alt="Preview" />
+                                <img src={previewUrl} className="absolute inset-0 h-full w-full object-cover" alt="Preview" />
                             </div>
                         </div>
                     )}
@@ -144,12 +153,7 @@ export default function AttachGameModal({ categoriesEn, categoriesEs, onUploaded
                         </span>
                     </label>
 
-                    <FileInput
-                        onChange={(e) => {
-                            setData('file', e.target.files ? e.target.files[0] : undefined);
-                            getPreview(e);
-                        }}
-                    />
+                    <FileInput accept="image/*" onChange={pickFile} />
                     <InputError message={errors.file} className="mt-2" />
                 </ModalBody>
                 <ModalFooter>

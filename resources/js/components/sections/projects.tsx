@@ -1,20 +1,23 @@
 import ChevronRight from '@/components/icons/chevron-right';
 import { GitHubRepository } from '@/types';
 import { Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function Projects() {
     const { t, i18n } = useTranslation();
-    const [projects, setProjects] = useState([]);
-    const [loaded, setLoaded] = useState(false);
+    const [projects, setProjects] = useState<GitHubRepository[]>([]);
 
-    if (!loaded) {
-        setLoaded(true);
-        fetch(route('github'))
-            .then((res) => res.json())
-            .then((data) => setProjects(data));
-    }
+    useEffect(() => {
+        const controller = new AbortController();
+
+        fetch(route('github'), { signal: controller.signal })
+            .then((response) => response.json())
+            .then((data: GitHubRepository[]) => setProjects(data))
+            .catch(() => undefined);
+
+        return () => controller.abort();
+    }, []);
 
     const formatDate = (dateString: string): string => {
         return new Date(`${dateString}`).toLocaleDateString(i18n.resolvedLanguage, {
@@ -27,7 +30,7 @@ export default function Projects() {
 
     return (
         <>
-            {projects.map((project: GitHubRepository, index) => (
+            {projects.map((project, index) => (
                 <article key={index} className="group group relative flex flex-col items-start">
                     <h2 className="text-base font-semibold tracking-tight text-zinc-800 dark:text-zinc-100">
                         <div className="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 sm:-inset-x-6 sm:rounded-2xl dark:bg-zinc-800/50" />

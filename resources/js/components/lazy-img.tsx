@@ -1,5 +1,11 @@
+import { useIsDarkMode } from '@/hooks/use-dark-mode';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
+const PLACEHOLDER_COLORS = {
+    dark: { backgroundColor: '#27272a', textColor: '#d4d4d8' },
+    light: { backgroundColor: '#f4f4f5', textColor: '#52525b' },
+} as const;
 
 export default function LazyImg({
     image,
@@ -13,8 +19,8 @@ export default function LazyImg({
     forceLoad = false,
     withOverflow = false,
 }: Readonly<{
-    image: string;
-    preImage: string;
+    image?: string | null;
+    preImage?: string | null;
     errorImage?: string;
     alt: string;
     className?: string;
@@ -25,75 +31,56 @@ export default function LazyImg({
     withOverflow?: boolean;
 }>) {
     const { t } = useTranslation();
-    const [imageLoaded, setImageLoaded] = useState(false);
-    const [imageError, setImageError] = useState(false);
-    const [isDark, setIsDark] = useState(false);
-    const [imageToLoad, setImageToLoad] = useState(image);
+    const isDark = useIsDarkMode();
 
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [hasFailed, setHasFailed] = useState(false);
+
+    // Reset the loading state whenever the component is pointed at another image.
     useEffect(() => {
-        // Detect initial theme
-        const isDarkMode = document.documentElement.classList.contains('dark');
-        setIsDark(isDarkMode);
+        setIsLoaded(false);
+        setHasFailed(false);
+    }, [image]);
 
-        // Watch for theme changes
-        const observer = new MutationObserver(() => {
-            const isDarkMode = document.documentElement.classList.contains('dark');
-            setIsDark(isDarkMode);
-        });
-
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-        return () => observer.disconnect();
-    }, []);
-
-    useEffect(() => {
-        const imgDefers = document.getElementsByTagName('img');
-        for (const imgDefer of imgDefers) {
-            if (imgDefer.getAttribute('data-src')) {
-                imgDefer.setAttribute('src', imgDefer.getAttribute('data-src') ?? '');
-                imgDefer.setAttribute('lazy', 'loaded');
-            }
-        }
-    });
-
-    const getThemeColors = () => {
-        if (isDark) {
-            return {
-                backgroundColor: '#27272a', // zinc-800
-                textColor: '#d4d4d8', // zinc-300
-            };
-        }
-        return {
-            backgroundColor: '#f4f4f5', // zinc-100
-            textColor: '#52525b', // zinc-600
-        };
-    };
-
-    const themeColors = getThemeColors();
-
-    const changeToErrorImage = () => {
-        setImageError(true);
-        if (errorImage) {
-            setImageToLoad(errorImage);
-        }
-    };
+    const source = (hasFailed && errorImage ? errorImage : image) ?? '';
+    const preview = preImage && preImage !== source ? preImage : '';
+    const showPlaceholder = !source || (hasFailed ? !errorImage : !isLoaded && !preview);
+    const { backgroundColor, textColor } = PLACEHOLDER_COLORS[isDark ? 'dark' : 'light'];
 
     return (
         <div style={{ position: 'relative', width, height, overflow: withOverflow ? 'visible' : 'hidden' }}>
-            <img
-                width={width}
-                height={height}
-                className={className}
-                loading={forceLoad ? 'eager' : 'lazy'}
-                data-src={imageToLoad}
-                src={preImage}
-                alt={alt}
-                title={title}
-                onLoad={() => setImageLoaded(true)}
-                onError={() => changeToErrorImage()}
-                style={{ opacity: imageLoaded ? 1 : 0.5 }}
-            />
-            {(!imageLoaded || (imageError && !errorImage)) && (
+            {/* Blurred stand-in, dropped once the real image is visible: a positioned element
+                would otherwise keep painting on top of its in-flow sibling whatever the DOM
+                order is. */}
+            {preview && !isLoaded && (
+                <img
+                    aria-hidden
+                    alt=""
+                    width={width}
+                    height={height}
+                    className={className}
+                    src={preview}
+                    style={{ position: 'absolute', top: 0, left: 0, filter: 'blur(16px)' }}
+                />
+            )}
+
+            {source && (
+                <img
+                    width={width}
+                    height={height}
+                    className={className}
+                    loading={forceLoad ? 'eager' : 'lazy'}
+                    decoding="async"
+                    src={source}
+                    alt={alt}
+                    title={title}
+                    onLoad={() => setIsLoaded(true)}
+                    onError={() => setHasFailed(true)}
+                    style={{ opacity: isLoaded ? 1 : 0, transition: 'opacity 200ms ease-in-out' }}
+                />
+            )}
+
+            {showPlaceholder && (
                 <div
                     style={{
                         position: 'absolute',
@@ -104,15 +91,15 @@ export default function LazyImg({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        backgroundColor: themeColors.backgroundColor,
-                        color: themeColors.textColor,
+                        backgroundColor,
+                        color: textColor,
                         fontSize: '14px',
                         textAlign: 'center',
                         padding: '10px',
                         fontWeight: '500',
                     }}
                 >
-                    {imageError ? t('lazy-img.error') : t('lazy-img.loading', { alt })}
+                    {hasFailed ? t('lazy-img.error') : t('lazy-img.loading', { alt })}
                 </div>
             )}
         </div>

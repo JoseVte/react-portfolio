@@ -1,20 +1,17 @@
-import jsxRuntime from 'react/jsx-runtime';
-const _jsx = jsxRuntime.jsx;
+import { createElement, Fragment, type ReactNode } from 'react';
 
-const newlineRegex = /(\r\n|\r|\n)/g;
+const NEWLINE_SPLIT_PATTERN = /(\r\n|\r|\n)/g;
+const NEWLINE_PATTERN = /^(\r\n|\r|\n)$/;
 
-const nl2br = function (str: never | string) {
-    if (typeof str !== 'string') {
-        return str;
+/**
+ * Render a plain string with its newlines turned into <br /> elements.
+ */
+export function nl2br(value: string | null | undefined): ReactNode {
+    if (typeof value !== 'string') {
+        return value ?? null;
     }
 
-    return str.split(newlineRegex).map((line, index) => {
-        if (line.match(newlineRegex)) {
-            return _jsx('br', { key: index });
-        }
-
-        return line;
-    });
-};
-
-export { nl2br };
+    return value
+        .split(NEWLINE_SPLIT_PATTERN)
+        .map((part, index) => (NEWLINE_PATTERN.test(part) ? createElement('br', { key: index }) : createElement(Fragment, { key: index }, part)));
+}

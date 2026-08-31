@@ -5,6 +5,7 @@
         "claude_code",
         "junie"
     ],
+    "cloud": false,
     "guidelines": true,
     "herd_mcp": true,
     "mcp": true,
@@ -13,7 +14,10 @@
     ],
     "sail": false,
     "skills": [
-        "pest-testing",
+        "infer-conventions",
+        "laravel-best-practices",
+        "testing-best-practices",
+        "configure-nightwatch",
         "inertia-react-development",
         "tailwindcss-development",
         "debugging-output-and-previewing-html-using-ray"

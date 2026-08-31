@@ -5,27 +5,39 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\IpUtils;
+use Symfony\Component\HttpFoundation\Response;
 
 class IpMiddleware
 {
     /**
-     * Handle an incoming request.
+     * Restrict the route to the IP addresses listed in the `ALLOWED_IPS` environment variable.
+     *
+     * @param  Closure(Request): Response  $next
      */
-    public function handle(Request $request, Closure $next): mixed
+    public function handle(Request $request, Closure $next): Response
     {
-        $allowedIps = array_map('trim', explode(',', config('app.allowed-ips')));
+        abort_unless($this->isAllowed($request), 401);
 
-        $checkIp = false;
+        return $next($request);
+    }
+
+    private function isAllowed(Request $request): bool
+    {
+        $allowedIps = collect(explode(',', (string) config('app.allowed-ips')))
+            ->map(fn (string $ip): string => trim($ip))
+            ->filter()
+            ->all();
+
+        if ($allowedIps === []) {
+            return false;
+        }
+
         foreach ($request->getClientIps() as $ip) {
-            if (! $checkIp && IpUtils::checkIp($ip, $allowedIps)) {
-                $checkIp = true;
+            if (IpUtils::checkIp($ip, $allowedIps)) {
+                return true;
             }
         }
 
-        if (! $checkIp) {
-            abort(401);
-        }
-
-        return $next($request);
+        return false;
     }
 }

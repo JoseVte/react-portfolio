@@ -2,8 +2,8 @@ import InputAutocomplete from '@/components/input-autocomplete';
 import InputError from '@/components/input-error';
 import { PlayroomGame } from '@/types';
 import { useForm } from '@inertiajs/react';
-import { Alert, Button, Modal, ModalBody, ModalFooter, ModalHeader, Textarea, TextInput } from 'flowbite-react';
-import { useState } from 'react';
+import { Alert, Button, FileInput, Modal, ModalBody, ModalFooter, ModalHeader, Textarea, TextInput } from 'flowbite-react';
+import { ChangeEvent, useEffect, useState } from 'react';
 
 interface UpdatePlayroomModalProps {
     game: PlayroomGame;
@@ -31,39 +31,48 @@ export default function UpdateGameModal({
         file?: Blob;
     }>({
         name: game.name,
-        description_en: game.description_es,
+        description_en: game.description_en,
         description_es: game.description_es,
         category_en: game.category_en,
         category_es: game.category_es,
         file: undefined,
     });
 
-    const closeModal = () => {
-        onCloseModal();
+    const { delete: destroy } = useForm({});
+    const [hasDeleteError, setHasDeleteError] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState('');
+
+    // Object URLs stay alive until revoked, so release the previous one on every change.
+    useEffect(() => {
+        if (!previewUrl) {
+            return;
+        }
+
+        return () => URL.revokeObjectURL(previewUrl);
+    }, [previewUrl]);
+
+    const pickFile = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+
+        setData('file', file ?? undefined);
+        setPreviewUrl(file ? URL.createObjectURL(file) : '');
     };
 
-    const { delete: destroy } = useForm({});
-    const [error, setError] = useState<Error | null>(null);
-
-    const submitForm = async () => {
+    const submitForm = () => {
         post(route('playroom.update', game.id), {
             onSuccess: onUpdated,
         });
     };
 
-    const deleteImage = async () => {
-        destroy(route('assets.destroy', { game: game.id }), {
+    const deleteGame = () => {
+        destroy(route('playroom.destroy', game.id), {
             onSuccess: onDeleted,
-            // @ts-expect-error Error type
-            onError: (error: Error) => {
-                setError(error);
-                console.error(error);
-            },
+            onError: () => setHasDeleteError(true),
         });
     };
 
     return (
-        <Modal show={true} onClose={closeModal}>
+        <Modal show={true} onClose={onCloseModal}>
             <ModalHeader>
                 <div className="flex w-full flex-row items-center text-lg text-zinc-800 dark:text-zinc-100">
                     <TextInput id="name" value={data.name} onChange={(e) => setData('name', e.target.value)} />
@@ -71,11 +80,15 @@ export default function UpdateGameModal({
                 </div>
             </ModalHeader>
             <ModalBody>
-                {error && <Alert className="mb-5">Error deleting image</Alert>}
+                {hasDeleteError && <Alert className="mb-5">Error deleting game</Alert>}
                 <div className="mb-5">
                     <div className="mx-auto w-full flex-none overflow-hidden rounded-xl bg-zinc-100 sm:rounded-2xl dark:bg-zinc-800">
-                        <img src={game.image_url} className="max-h-80 w-full object-contain filter-none!" alt={game.name} />
+                        <img src={previewUrl || game.image_url} className="max-h-80 w-full object-contain" alt={game.name} />
                     </div>
+
+                    <div className="mt-2 mb-2 border-t border-gray-500 pt-2 text-lg font-semibold">Replace image</div>
+                    <FileInput accept="image/*" onChange={pickFile} />
+                    <InputError message={errors.file} className="mt-2" />
 
                     <div className="mt-2 mb-2 border-t border-gray-500 pt-2 text-lg font-semibold">Description (EN)</div>
                     <div>
@@ -110,10 +123,10 @@ export default function UpdateGameModal({
             <ModalFooter>
                 <div className="flex w-full justify-between gap-x-4">
                     <div className="flex items-center justify-center gap-x-4">
-                        <Button color="alternative" onClick={closeModal}>
+                        <Button color="alternative" onClick={onCloseModal}>
                             Cancel
                         </Button>
-                        <Button color="red" onClick={deleteImage}>
+                        <Button color="red" onClick={deleteGame}>
                             Delete
                         </Button>
                     </div>

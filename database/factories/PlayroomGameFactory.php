@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\ImageCategory;
 use App\Models\Image;
 use App\Models\PlayroomGame;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -24,8 +25,7 @@ class PlayroomGameFactory extends Factory
             'description_en' => fake()->sentence(),
             'category_es' => fake()->word(),
             'category_en' => fake()->word(),
-            'image_id' => Image::factory(),
-            'order' => fake()->numberBetween(1, 100),
+            'image_id' => Image::factory()->inCategory(ImageCategory::PLAYROOM),
         ];
     }
 }
