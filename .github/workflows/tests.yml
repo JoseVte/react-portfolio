@@ -4,12 +4,12 @@ on:
   push:
     branches:
       - develop
-      - main
   pull_request:
     branches:
       - develop
       - main
-  # Called by the deploy workflow so nothing ships without a green suite.
+  # Called by the deploy workflow so nothing ships without a green suite. That call is what
+  # covers pushes to main, so listing main above too would run the whole suite twice.
   workflow_call:
 
 concurrency:
