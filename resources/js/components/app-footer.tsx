@@ -16,12 +16,12 @@ export default function AppFooter({ navLinks }: Readonly<{ navLinks: object }>) 
                     <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
                         <div className="flex flex-wrap justify-center gap-x-6 gap-y-1 text-sm font-medium text-zinc-800 dark:text-zinc-200">
                             {Object.entries(navLinks).map(([url, text]) => (
-                                <Link key={url} className="transition hover:text-yellow-500 dark:hover:text-yellow-400" href={url}>
+                                <Link key={url} className="transition hover:text-yellow-700 dark:hover:text-yellow-400" href={url}>
                                     {text}
                                 </Link>
                             ))}
                         </div>
-                        <p className="text-sm text-zinc-400 dark:text-zinc-500">
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
                             &copy; {isServer ? '' : new Date().getFullYear()} Josrom. {t('footer.copy')}
                         </p>
                     </div>

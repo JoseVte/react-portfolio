@@ -6,7 +6,7 @@ import Mail from '@/components/icons/mail';
 import Twitter from '@/components/icons/twitter';
 import LazyImg from '@/components/lazy-img';
 import DefaultLayout from '@/layouts/default-layout';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { sample } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { ParallaxBanner, ParallaxProvider } from 'react-scroll-parallax';
@@ -16,6 +16,16 @@ export default function About() {
 
     const title = t('layouts.about.title');
     const description = t('layouts.about.description');
+
+    const socialLinks = [
+        { name: 'Twitter', href: import.meta.env.VITE_PUBLIC_TWITTER, Icon: Twitter },
+        { name: 'Instagram', href: import.meta.env.VITE_PUBLIC_INSTAGRAM, Icon: Instagram },
+        { name: 'GitHub', href: import.meta.env.VITE_PUBLIC_GITHUB, Icon: Github },
+        { name: 'LinkedIn', href: import.meta.env.VITE_PUBLIC_LINKEDIN, Icon: LinkedIn },
+    ];
+    const linkClass =
+        'group flex py-2.5 text-sm font-medium text-zinc-800 transition hover:text-teal-700 dark:text-zinc-200 dark:hover:text-yellow-500';
+    const iconClass = 'size-6 flex-none fill-zinc-500 transition group-hover:fill-teal-700 dark:group-hover:fill-yellow-500';
 
     return (
         <ParallaxProvider>
@@ -41,15 +51,13 @@ export default function About() {
                                             translateY: [20, 60],
                                             children: (
                                                 <LazyImg
-                                                    width={500}
-                                                    height={500}
                                                     image="/images/portrait.jpg"
                                                     preImage="/images/portrait-min.jpg"
                                                     alt={t('img-alt.profile')}
                                                     title={t('img-alt.profile')}
                                                     forceLoad
                                                     withOverflow
-                                                    className={`aspect-square h-100 w-100 rounded-2xl bg-zinc-100 object-cover 2xl:h-125 2xl:w-125 dark:bg-zinc-800 ${sample(['rotate-3', '-rotate-3', 'rotate-2', '-rotate-2'])}`}
+                                                    className={`aspect-square w-full max-w-100 rounded-2xl bg-zinc-100 object-cover 2xl:max-w-125 dark:bg-zinc-800 ${sample(['rotate-3', '-rotate-3', 'rotate-2', '-rotate-2'])}`}
                                                 />
                                             ),
                                         },
@@ -57,14 +65,14 @@ export default function About() {
                                             translateY: [100, 60],
                                             speed: 10,
                                             children: (
-                                                <div className="-mx-4 block h-72 w-110 bg-linear-to-t from-white to-transparent lg:hidden lg:h-60 2xl:w-132 dark:from-zinc-900" />
+                                                <div className="-mx-4 block h-72 w-[calc(100%+2rem)] max-w-110 bg-linear-to-t from-white to-transparent lg:hidden lg:h-60 2xl:max-w-132 dark:from-zinc-900" />
                                             ),
                                         },
                                         {
                                             translateY: [100, 75],
                                             speed: 10,
                                             children: (
-                                                <div className="-mx-4 hidden h-60 w-110 bg-linear-to-t from-white to-transparent lg:block lg:h-60 2xl:w-132 dark:from-zinc-900" />
+                                                <div className="-mx-4 hidden h-60 w-[calc(100%+2rem)] max-w-110 bg-linear-to-t from-white to-transparent lg:block lg:h-60 2xl:max-w-132 dark:from-zinc-900" />
                                             ),
                                         },
                                     ]}
@@ -81,55 +89,20 @@ export default function About() {
                         </div>
                         <div className="z-10 lg:pl-20">
                             <ul role="list">
-                                <li className="flex">
-                                    <Link
-                                        className="group flex text-sm font-medium text-zinc-800 transition hover:text-teal-500 dark:text-zinc-200 dark:hover:text-yellow-500"
-                                        href={import.meta.env.VITE_PUBLIC_TWITTER}
-                                        aria-label={t('follow', { social: 'Twitter' })}
-                                    >
-                                        <Twitter className="size-6 flex-none fill-zinc-500 transition group-hover:fill-teal-500 dark:group-hover:fill-yellow-500" />
-                                        <span className="ml-4">{t('follow', { social: 'Twitter' })}</span>
-                                    </Link>
-                                </li>
-                                <li className="mt-4 flex">
-                                    <Link
-                                        className="group flex text-sm font-medium text-zinc-800 transition hover:text-teal-500 dark:text-zinc-200 dark:hover:text-yellow-500"
-                                        href={import.meta.env.VITE_PUBLIC_INSTAGRAM}
-                                        aria-label={t('follow', { social: 'Instagram' })}
-                                    >
-                                        <Instagram className="size-6 flex-none fill-zinc-500 transition group-hover:fill-teal-500 dark:group-hover:fill-yellow-500" />
-                                        <span className="ml-4">{t('follow', { social: 'Instagram' })}</span>
-                                    </Link>
-                                </li>
-                                <li className="mt-4 flex">
-                                    <Link
-                                        className="group flex text-sm font-medium text-zinc-800 transition hover:text-teal-500 dark:text-zinc-200 dark:hover:text-yellow-500"
-                                        href={import.meta.env.VITE_PUBLIC_GITHUB}
-                                        aria-label={t('follow', { social: 'GitHub' })}
-                                    >
-                                        <Github className="size-6 flex-none fill-zinc-500 transition group-hover:fill-teal-500 dark:group-hover:fill-yellow-500" />
-                                        <span className="ml-4">{t('follow', { social: 'GitHub' })}</span>
-                                    </Link>
-                                </li>
-                                <li className="mt-4 flex">
-                                    <Link
-                                        className="group dark:-hover:text-yellow-500 flex text-sm font-medium text-zinc-800 transition hover:text-teal-500 dark:text-zinc-200"
-                                        href={import.meta.env.VITE_PUBLIC_LINKEDIN}
-                                        aria-label={t('follow', { social: 'LinkedIn' })}
-                                    >
-                                        <LinkedIn className="size-6 flex-none fill-zinc-500 transition group-hover:fill-teal-500 dark:group-hover:fill-yellow-500" />
-                                        <span className="ml-4">{t('follow', { social: 'LinkedIn' })}</span>
-                                    </Link>
-                                </li>
+                                {socialLinks.map(({ name, href, Icon }) => (
+                                    <li key={name} className="flex">
+                                        <a className={linkClass} href={href} target="_blank" rel="noopener noreferrer">
+                                            <Icon className={iconClass} />
+                                            <span className="ml-4">{t('follow', { social: name })}</span>
+                                        </a>
+                                    </li>
+                                ))}
 
                                 <li className="mt-8 flex border-t border-zinc-100 pt-8 dark:border-zinc-700/40">
-                                    <Link
-                                        className="group flex text-sm font-medium text-zinc-800 transition hover:text-teal-500 dark:text-zinc-200 dark:hover:text-yellow-500"
-                                        href={'mailto:' + import.meta.env.VITE_PUBLIC_EMAIL}
-                                    >
-                                        <Mail className="size-6 flex-none fill-zinc-500 transition group-hover:fill-teal-500 dark:group-hover:fill-yellow-500" />
+                                    <a className={linkClass} href={'mailto:' + import.meta.env.VITE_PUBLIC_EMAIL}>
+                                        <Mail className={iconClass} />
                                         <span className="ml-4">{import.meta.env.VITE_PUBLIC_EMAIL}</span>
-                                    </Link>
+                                    </a>
                                 </li>
                             </ul>
                         </div>

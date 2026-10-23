@@ -213,10 +213,22 @@ jobs:
             exit 1
           fi
 
+      # The check runs on the server itself, against the local nginx. Asked from the runner, the
+      # request goes through Cloudflare, which answers 403 to GitHub's datacenter addresses no
+      # matter how healthy the app is. --resolve keeps the real hostname, so nginx picks the
+      # right site and TLS still uses the right name; --insecure is there because the origin
+      # certificate is only meant to be trusted by Cloudflare, and the connection never leaves
+      # the machine.
       - name: Smoke test the deployment
+        env:
+          HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL || 'https://app.josrom.io/up' }}
+          SSH_TARGET: ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}
         run: |
+          host=$(printf '%s' "$HEALTHCHECK_URL" | sed -E 's#^https?://([^/:]+).*#\1#')
+          origin_curl="curl -s --max-time 15 --insecure --resolve '$host:443:127.0.0.1' '$HEALTHCHECK_URL'"
+
           for attempt in 1 2 3 4 5 6 7 8 9 10; do
-            status=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "${{ secrets.HEALTHCHECK_URL || 'https://app.josrom.io/up' }}" || true)
+            status=$(ssh -o StrictHostKeyChecking=yes "$SSH_TARGET" "$origin_curl -o /dev/null -w '%{http_code}'" || true)
             if [ "$status" = "200" ]; then
               echo "Site is up"
               exit 0
@@ -224,5 +236,23 @@ jobs:
             echo "Attempt $attempt returned $status, retrying..."
             sleep 10
           done
+
+          echo "Last response from the origin:"
+          ssh -o StrictHostKeyChecking=yes "$SSH_TARGET" "$origin_curl -i | head -n 40" || true
           echo "::error::The site did not come back up"
           exit 1
+
+      # The public path is still worth watching, but a Cloudflare block is not a broken deploy,
+      # so this only warns. The headers say who answered: `cf-mitigated` or a Cloudflare error
+      # page means the edge refused the runner, not that the app is down.
+      - name: Check the site through Cloudflare
+        env:
+          HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL || 'https://app.josrom.io/up' }}
+        run: |
+          status=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$HEALTHCHECK_URL" || true)
+          if [ "$status" = "200" ]; then
+            echo "Reachable through Cloudflare"
+            exit 0
+          fi
+          echo "::warning::$HEALTHCHECK_URL returned $status from the runner"
+          curl -s -I --max-time 15 "$HEALTHCHECK_URL" || true

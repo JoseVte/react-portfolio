@@ -7,7 +7,7 @@ import { Appearance } from '@/hooks/use-appearance';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useScroll } from '@/hooks/use-scroll';
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Fade } from 'react-awesome-reveal';
 import { useTranslation } from 'react-i18next';
 
@@ -29,6 +29,32 @@ export default function AppHeader({
     const currentPage = usePage().url;
 
     const [modal, setModal] = useState(false);
+    const menuButtonRef = useRef<HTMLButtonElement>(null);
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+        if (!modal) {
+            return;
+        }
+
+        closeButtonRef.current?.focus();
+
+        const closeOnEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setModal(false);
+                menuButtonRef.current?.focus();
+            }
+        };
+
+        document.addEventListener('keydown', closeOnEscape);
+
+        return () => document.removeEventListener('keydown', closeOnEscape);
+    }, [modal]);
+
+    const closeMenu = () => {
+        setModal(false);
+        menuButtonRef.current?.focus();
+    };
 
     const availableLocale = () => {
         return i18n.languages.filter((lng) => lng !== i18n.language)[0];
@@ -75,7 +101,10 @@ export default function AppHeader({
                             <div className="flex items-center justify-end md:justify-center">
                                 <div className="pointer-events-auto md:hidden">
                                     <button
+                                        ref={menuButtonRef}
                                         type="button"
+                                        aria-expanded={modal}
+                                        aria-controls="menuNavigation"
                                         className="group flex items-center rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg ring-1 shadow-zinc-800/5 ring-zinc-900/5 backdrop-blur dark:bg-zinc-800/90 dark:text-zinc-200 dark:ring-white/10 dark:hover:ring-white/20"
                                         onClick={() => setModal(true)}
                                     >
@@ -86,19 +115,21 @@ export default function AppHeader({
                                     {modal && (
                                         <div
                                             className="fixed inset-0 z-40 bg-zinc-800/40 opacity-100 backdrop-blur-sm dark:bg-black/80"
-                                            onClick={() => setModal(false)}
+                                            onClick={closeMenu}
                                         />
                                     )}
 
                                     {modal && (
                                         <div
                                             id="menuNavigation"
-                                            aria-hidden="true"
+                                            role="dialog"
+                                            aria-modal="true"
+                                            aria-labelledby="menuNavigationTitle"
                                             className="fixed inset-x-4 top-8 z-50 origin-top scale-100 rounded-3xl bg-white p-8 opacity-100 ring-1 ring-zinc-900/5 dark:bg-zinc-900 dark:ring-zinc-800"
                                         >
                                             <div className="relative max-h-full w-full max-w-2xl">
                                                 <div className="flex flex-row-reverse items-center justify-between">
-                                                    <button type="button" className="-m-1 p-1" onClick={() => setModal(false)}>
+                                                    <button ref={closeButtonRef} type="button" className="-m-2.5 p-2.5" onClick={closeMenu}>
                                                         <svg
                                                             viewBox="0 0 24 24"
                                                             aria-hidden="true"
@@ -115,7 +146,9 @@ export default function AppHeader({
                                                         </svg>
                                                         <span className="sr-only">{t('close')}</span>
                                                     </button>
-                                                    <h2 className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{t('nav.navigation')}</h2>
+                                                    <h2 id="menuNavigationTitle" className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                                                        {t('nav.navigation')}
+                                                    </h2>
                                                 </div>
 
                                                 <div className="mt-6">
@@ -124,7 +157,8 @@ export default function AppHeader({
                                                             <li key={url}>
                                                                 <Link
                                                                     href={url}
-                                                                    className={`block py-2 transition hover:text-teal-500 dark:hover:text-teal-400 ${isActive(url) ? 'text-yellow-500 dark:text-yellow-400' : ''}`}
+                                                                    aria-current={isActive(url) ? 'page' : undefined}
+                                                                    className={`block py-3 transition hover:text-teal-700 dark:hover:text-teal-400 ${isActive(url) ? 'text-yellow-700 dark:text-yellow-400' : ''}`}
                                                                 >
                                                                     {text}
                                                                 </Link>
@@ -143,7 +177,8 @@ export default function AppHeader({
                                             <li key={url}>
                                                 <Link
                                                     href={url}
-                                                    className={`relative block px-3 py-2 transition hover:text-teal-500 dark:hover:text-teal-400 ${isActive(url) ? 'text-yellow-500 dark:text-yellow-400' : ''}`}
+                                                    aria-current={isActive(url) ? 'page' : undefined}
+                                                    className={`relative block px-3 py-2 transition hover:text-teal-700 dark:hover:text-teal-400 ${isActive(url) ? 'text-yellow-700 dark:text-yellow-400' : ''}`}
                                                 >
                                                     {isActive(url) && (
                                                         <span className="absolute inset-x-1 -bottom-px h-px bg-linear-to-r from-teal-500/0 via-teal-500/40 to-teal-500/0 dark:from-teal-400/0 dark:via-teal-400/40 dark:to-teal-400/0" />

@@ -16,9 +16,11 @@ export default function Photos() {
     };
 
     useEffect(() => {
-        Promise.all([getImages('cat'), getImages('mountain'), getImages('other'), getImages('travel')]).then((response) => {
-            setImages(_.sampleSize(response[0].concat(response[1], response[2], response[3]), 5));
-        });
+        Promise.all([getImages('cat'), getImages('mountain'), getImages('other'), getImages('travel')])
+            .then((response) => {
+                setImages(_.sampleSize(response[0].concat(response[1], response[2], response[3]), 5));
+            })
+            .catch(() => setImages([]));
     }, []);
 
     return (

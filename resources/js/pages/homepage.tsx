@@ -45,33 +45,37 @@ export default function Homepage() {
                         <p className="mt-6 text-base text-zinc-600 dark:text-zinc-400">{descriptionExtended}</p>
                         <div className="mt-6 flex gap-6">
                             <a
-                                className="group -m-1 p-1"
+                                className="group -m-2.5 p-2.5"
                                 href={import.meta.env.VITE_PUBLIC_TWITTER}
                                 target="_blank"
+                                rel="noopener noreferrer"
                                 aria-label={t('follow', { social: 'Twitter' })}
                             >
                                 <Twitter className="size-6 fill-zinc-500 transition group-hover:fill-zinc-600 dark:fill-zinc-400 dark:group-hover:fill-yellow-300" />
                             </a>
                             <a
-                                className="group -m-1 p-1"
+                                className="group -m-2.5 p-2.5"
                                 href={import.meta.env.VITE_PUBLIC_INSTAGRAM}
                                 target="_blank"
+                                rel="noopener noreferrer"
                                 aria-label={t('follow', { social: 'Instagram' })}
                             >
                                 <Instagram className="size-6 fill-zinc-500 transition group-hover:fill-zinc-600 dark:fill-zinc-400 dark:group-hover:fill-yellow-300" />
                             </a>
                             <a
-                                className="group -m-1 p-1"
+                                className="group -m-2.5 p-2.5"
                                 href={import.meta.env.VITE_PUBLIC_GITHUB}
                                 target="_blank"
+                                rel="noopener noreferrer"
                                 aria-label={t('follow', { social: 'GitHub' })}
                             >
                                 <Github className="size-6 fill-zinc-500 transition group-hover:fill-zinc-600 dark:fill-zinc-400 dark:group-hover:fill-yellow-300" />
                             </a>
                             <a
-                                className="group -m-1 p-1"
+                                className="group -m-2.5 p-2.5"
                                 href={import.meta.env.VITE_PUBLIC_LINKEDIN}
                                 target="_blank"
+                                rel="noopener noreferrer"
                                 aria-label={t('follow', { social: 'LinkedIn' })}
                             >
                                 <LinkedIn className="size-6 fill-zinc-500 transition group-hover:fill-zinc-600 dark:fill-zinc-400 dark:group-hover:fill-yellow-300" />

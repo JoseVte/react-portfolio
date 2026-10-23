@@ -45,6 +45,7 @@ const messages = {
             'index.date': 'Date',
             'index.present': 'Present',
             'index.see-repository': 'See repository',
+            'index.until': 'to',
 
             'about.paragraph-1':
                 'I am Jose Vicente Orts Romero, a passionate software developer with extensive experience in the field of technology. Over the course of more than 10 years, I have had the opportunity to work on various projects.',
@@ -54,6 +55,12 @@ const messages = {
                 'I am always seeking continuous learning and stay updated on the latest trends and advancements in the field of technology. I am passionate about exploring new technologies and finding innovative ways to enhance my skills.',
 
             'projects.select-year': 'Select a year',
+            'projects.stars': '{{count}} stars on GitHub',
+            'projects.stars_one': '{{count}} star on GitHub',
+            'projects.forks': '{{count}} forks on GitHub',
+            'projects.forks_one': '{{count}} fork on GitHub',
+            'projects.issues': '{{count}} open issues on GitHub',
+            'projects.issues_one': '{{count}} open issue on GitHub',
             'projects.description':
                 'I’ve worked on tons of little projects over the years but these are the ones that I’m most proud of. Many of them are open-source, so if you see something that piques your interest, check out the code and contribute if you have ideas for how it can be improved.',
 
@@ -103,6 +110,20 @@ const messages = {
 
             'lazy-img.loading': 'Loading {{alt}}...',
             'lazy-img.error': 'Error loading image',
+
+            'status.projects.loading': 'Loading projects from GitHub...',
+            'status.projects.error': 'GitHub did not respond, so the projects could not be loaded.',
+            'status.projects.see-on-github': 'See them on GitHub',
+            'status.projects.empty': 'There are no public projects to show yet.',
+            'status.projects.next-page-error': 'The next projects could not be loaded.',
+            'status.projects.retry': 'Try again',
+            'status.playroom.loading': 'Loading the board game collection...',
+            'status.playroom.error': 'The board game collection could not be loaded. Try again later.',
+            'status.playroom.empty': 'No board games added yet.',
+            'status.steam.loading': 'Loading Steam games...',
+            'status.steam.error': 'Steam did not respond, so the games could not be loaded. Try again later.',
+            'status.steam.recently-empty': 'No games played in the last two weeks.',
+            'status.steam.owned-empty': 'No games to show.',
         },
     },
     es: {
@@ -147,6 +168,7 @@ const messages = {
             'index.date': 'Fecha',
             'index.present': 'Presente',
             'index.see-repository': 'Ver repositorio',
+            'index.until': 'a',
 
             'about.paragraph-1':
                 'Soy Jose Vicente Orts Romero, un apasionado desarrollador de software con amplia experiencia en el campo de la tecnología. A lo largo de más de 10 años, he tenido la oportunidad de trabajar en varios proyectos.',
@@ -156,6 +178,12 @@ const messages = {
                 'Siempre busco el aprendizaje continuo y mantenerme actualizado sobre las últimas tendencias y avances en el campo de la tecnología. Me apasiona explorar nuevas tecnologías y encontrar formas innovadoras de mejorar mis habilidades.',
 
             'projects.select-year': 'Selecciona un año',
+            'projects.stars': '{{count}} estrellas en GitHub',
+            'projects.stars_one': '{{count}} estrella en GitHub',
+            'projects.forks': '{{count}} forks en GitHub',
+            'projects.forks_one': '{{count}} fork en GitHub',
+            'projects.issues': '{{count}} issues abiertas en GitHub',
+            'projects.issues_one': '{{count}} issue abierta en GitHub',
             'projects.description':
                 'He trabajado en toneladas de pequeños proyectos a lo largo de los años, pero estos son de los que estoy más orgulloso. Muchos de ellos son de código abierto, por lo que si ve algo que despierta su interés, consulte el código y contribuya si tiene ideas sobre cómo se puede mejorar.',
 
@@ -205,6 +233,20 @@ const messages = {
 
             'lazy-img.loading': 'Cargando {{alt}}...',
             'lazy-img.error': 'Error al cargar la imagen',
+
+            'status.projects.loading': 'Cargando proyectos de GitHub...',
+            'status.projects.error': 'GitHub no ha respondido y no se han podido cargar los proyectos.',
+            'status.projects.see-on-github': 'Verlos en GitHub',
+            'status.projects.empty': 'Todavía no hay proyectos públicos que mostrar.',
+            'status.projects.next-page-error': 'No se han podido cargar más proyectos.',
+            'status.projects.retry': 'Reintentar',
+            'status.playroom.loading': 'Cargando la colección de juegos de mesa...',
+            'status.playroom.error': 'No se ha podido cargar la colección de juegos de mesa. Prueba más tarde.',
+            'status.playroom.empty': 'Todavía no hay juegos de mesa añadidos.',
+            'status.steam.loading': 'Cargando juegos de Steam...',
+            'status.steam.error': 'Steam no ha respondido y no se han podido cargar los juegos. Prueba más tarde.',
+            'status.steam.recently-empty': 'No he jugado a nada en las últimas dos semanas.',
+            'status.steam.owned-empty': 'No hay juegos que mostrar.',
         },
     },
 };

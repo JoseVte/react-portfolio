@@ -7,7 +7,9 @@ import HomepageLink from '@/components/icons/homepage-link';
 import Blade from '@/components/icons/languages/blade';
 import Link from '@/components/icons/link';
 import LazyImg from '@/components/lazy-img';
+import StatusMessage from '@/components/status-message';
 import { useAppearance } from '@/hooks/use-appearance';
+import { FetchStatus } from '@/hooks/use-fetch';
 import DefaultLayout from '@/layouts/default-layout';
 import { GitHubRepository } from '@/types';
 import { Head } from '@inertiajs/react';
@@ -41,6 +43,16 @@ export default function Projects() {
     const [projects, setProjects] = useState<GitHubRepository[]>([]);
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(1);
+    const [status, setStatus] = useState<FetchStatus>('loading');
+    const [hasNextPageFailed, setHasNextPageFailed] = useState(false);
+
+    const readProjects = (response: Response): Promise<GitHubRepository[]> => {
+        if (!response.ok) {
+            throw new Error(`GitHub projects request failed with status ${response.status}`);
+        }
+
+        return response.json();
+    };
 
     const getSearchParams = (extraParams?: { [key: string]: number | string }) => {
         extraParams = extraParams || {};
@@ -62,23 +74,40 @@ export default function Projects() {
         const controller = new AbortController();
 
         fetch(route('github', { ...getSearchParams() }), { signal: controller.signal })
-            .then((response) => response.json())
-            .then((data: GitHubRepository[]) => setProjects(data))
-            .catch(() => undefined);
+            .then(readProjects)
+            .then((data) => {
+                setProjects(data);
+                setStatus('success');
+            })
+            .catch(() => {
+                if (!controller.signal.aborted) {
+                    setStatus('error');
+                }
+            });
 
         return () => controller.abort();
     }, []);
 
     const fetchNextPage = () => {
         fetch(route('github', { ...getSearchParams({ page: page + 1 }) }))
-            .then((res) => res.json())
-            .then((data: GitHubRepository[]) => {
+            .then(readProjects)
+            .then((data) => {
                 setProjects((currentProjects) => [...currentProjects, ...data]);
                 setPage(page + 1);
                 if (data.length === 0) {
                     setHasMore(false);
                 }
+            })
+            .catch(() => {
+                setHasMore(false);
+                setHasNextPageFailed(true);
             });
+    };
+
+    const retryNextPage = () => {
+        setHasNextPageFailed(false);
+        setHasMore(true);
+        fetchNextPage();
     };
 
     const formatDate = (dateString: string): string => {
@@ -244,107 +273,150 @@ export default function Projects() {
                     <ReactTooltip id="calendar-tooltip" />
                 </div>
                 <div className="mt-16 sm:mt-20">
-                    <InfiniteScroll
-                        className="grid grid-cols-1 gap-x-12 gap-y-16 sm:grid-cols-2 lg:grid-cols-3"
-                        style={{ overflow: 'visible' }}
-                        next={fetchNextPage}
-                        hasMore={hasMore}
-                        loader={
-                            <div className="col-span-3 flex items-center justify-center">
-                                <ThreeDot variant="bounce" color="oklch(0.852 0.199 91.936)" size="medium" text="" textColor="" />
-                            </div>
-                        }
-                        dataLength={projects.length}
-                    >
-                        {projects.map((project: GitHubRepository, index) => (
-                            <div key={index} className="group relative flex flex-col items-start">
-                                <div className="grid grid-cols-[50px_1fr] items-center gap-x-1 gap-y-2">
-                                    <div className="relative z-10 flex size-12 items-center justify-center rounded-full bg-white shadow-md ring-1 shadow-zinc-800/5 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0">
-                                        <div className="size-8 overflow-hidden rounded-full">
-                                            <LazyImg
-                                                image={project.owner.avatar_url}
-                                                preImage={project.owner.avatar_url}
-                                                alt={project.owner.login}
-                                                className="size-8"
-                                            />
-                                        </div>
-                                    </div>
-                                    <strong className="italic">{project.owner.login}</strong>
+                    {status === 'loading' && <StatusMessage>{t('status.projects.loading')}</StatusMessage>}
+                    {status === 'error' && (
+                        <StatusMessage>
+                            {t('status.projects.error')}{' '}
+                            <a
+                                className="font-medium text-teal-700 underline hover:text-yellow-700 dark:text-teal-500 dark:hover:text-yellow-400"
+                                href={import.meta.env.VITE_PUBLIC_GITHUB}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                {t('status.projects.see-on-github')}
+                            </a>
+                        </StatusMessage>
+                    )}
+                    {status === 'success' && !projects.length && <StatusMessage>{t('status.projects.empty')}</StatusMessage>}
 
-                                    <div className="z-10 mx-auto mt-2 flex size-10 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-700">
-                                        {getLanguageIcon(project.language)}
-                                    </div>
-                                    <h2 className="text-base font-semibold text-zinc-800 dark:text-zinc-100">
-                                        <div className="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 sm:-inset-x-6 sm:rounded-2xl dark:bg-zinc-800/50" />
-                                        <a className="flex items-center gap-2" target="_blank" href={project.html_url}>
-                                            <span className="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl" />
-                                            <span className="relative z-10">{project.name}</span>
-                                        </a>
-                                    </h2>
-                                    <div className="col-start-2 flex flex-col items-start">
-                                        <p className="relative z-10 text-sm text-zinc-600 dark:text-zinc-400">{project.description}</p>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <div className="relative z-30 my-4 flex justify-between gap-4 rounded-2xl border px-4 py-2 text-sm">
-                                            <a target="_blank" href={project.html_url} className="flex items-center gap-2" aria-label="github-link">
-                                                <Stargazers className="size-4 fill-current" />
-                                                <div>{project.stargazers_count}</div>
-                                            </a>
-                                            <a
-                                                target="_blank"
-                                                href={project.html_url + '/fork'}
-                                                className="flex items-center gap-2"
-                                                aria-label="github-link"
-                                            >
-                                                <Forks className="size-4 fill-current" />
-                                                <div>{project.forks_count}</div>
-                                            </a>
-                                            <a
-                                                target="_blank"
-                                                href={project.html_url + '/issues'}
-                                                className="flex items-center gap-2"
-                                                aria-label="github-link"
-                                            >
-                                                <Issues className="size-4 fill-current" />
-                                                <div>{project.open_issues_count}</div>
-                                            </a>
-                                        </div>
-                                    </div>
-                                    {project.homepage && (
-                                        <>
-                                            <a
-                                                href={project.homepage}
-                                                target="_blank"
-                                                className="relative z-20 mx-auto flex justify-center text-sm font-medium text-zinc-400 transition group-hover:text-teal-500 dark:text-zinc-200 dark:hover:text-yellow-500"
-                                            >
-                                                <HomepageLink className="size-5 flex-none" />
-                                            </a>
-                                            <a
-                                                href={project.homepage}
-                                                title={project.homepage}
-                                                target="_blank"
-                                                className="relative z-20 block truncate text-sm font-medium text-zinc-400 transition group-hover:text-teal-500 dark:text-zinc-200 dark:hover:text-yellow-500"
-                                            >
-                                                {project.homepage}
-                                            </a>
-                                        </>
-                                    )}
-                                    <Link className="z-10 mx-auto size-6 flex-none" />
-                                    <span className="z-10 text-sm font-medium text-zinc-400 transition group-hover:text-teal-500 dark:text-zinc-200 dark:group-hover:text-yellow-500">
-                                        github.com
-                                    </span>
-
-                                    <DateCalendarUp className="z-10 m-auto size-5 flex-none" />
-                                    <time
-                                        className="z-10 text-xs text-zinc-400 transition group-hover:text-teal-500 dark:text-zinc-200"
-                                        dateTime={project.updated_at}
-                                    >
-                                        {formatDate(project.updated_at)}
-                                    </time>
+                    {status === 'success' && !!projects.length && (
+                        <InfiniteScroll
+                            className="grid grid-cols-1 gap-x-12 gap-y-16 sm:grid-cols-2 lg:grid-cols-3"
+                            style={{ overflow: 'visible' }}
+                            next={fetchNextPage}
+                            hasMore={hasMore}
+                            loader={
+                                <div className="col-span-3 flex items-center justify-center">
+                                    <ThreeDot variant="bounce" color="oklch(0.852 0.199 91.936)" size="medium" text="" textColor="" />
                                 </div>
-                            </div>
-                        ))}
-                    </InfiniteScroll>
+                            }
+                            dataLength={projects.length}
+                        >
+                            {projects.map((project: GitHubRepository, index) => (
+                                <div key={index} className="group relative flex flex-col items-start">
+                                    <div className="grid grid-cols-[50px_1fr] items-center gap-x-1 gap-y-2">
+                                        <div className="relative z-10 flex size-12 items-center justify-center rounded-full bg-white shadow-md ring-1 shadow-zinc-800/5 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0">
+                                            <div className="size-8 overflow-hidden rounded-full">
+                                                <LazyImg
+                                                    image={project.owner.avatar_url}
+                                                    preImage={project.owner.avatar_url}
+                                                    alt={project.owner.login}
+                                                    className="size-8"
+                                                />
+                                            </div>
+                                        </div>
+                                        <strong className="italic">{project.owner.login}</strong>
+
+                                        <div className="z-10 mx-auto mt-2 flex size-10 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-700">
+                                            {getLanguageIcon(project.language)}
+                                        </div>
+                                        <h2 className="text-base font-semibold text-zinc-800 dark:text-zinc-100">
+                                            <div className="absolute -inset-x-4 -inset-y-6 z-0 scale-95 bg-zinc-50 opacity-0 transition group-hover:scale-100 group-hover:opacity-100 sm:-inset-x-6 sm:rounded-2xl dark:bg-zinc-800/50" />
+                                            <a className="flex items-center gap-2" target="_blank" rel="noopener noreferrer" href={project.html_url}>
+                                                <span className="absolute -inset-x-4 -inset-y-6 z-20 sm:-inset-x-6 sm:rounded-2xl" />
+                                                <span className="relative z-10">{project.name}</span>
+                                            </a>
+                                        </h2>
+                                        <div className="col-start-2 flex flex-col items-start">
+                                            <p className="relative z-10 text-sm text-zinc-600 dark:text-zinc-400">{project.description}</p>
+                                        </div>
+                                        <div className="col-span-2">
+                                            <div className="relative z-30 my-4 flex justify-between gap-4 rounded-2xl border px-4 py-2 text-sm">
+                                                <a
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    href={project.html_url}
+                                                    className="flex items-center gap-2"
+                                                    aria-label={t('projects.stars', { count: project.stargazers_count })}
+                                                >
+                                                    <Stargazers className="size-4 fill-current" />
+                                                    <div>{project.stargazers_count}</div>
+                                                </a>
+                                                <a
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    href={project.html_url + '/fork'}
+                                                    className="flex items-center gap-2"
+                                                    aria-label={t('projects.forks', { count: project.forks_count })}
+                                                >
+                                                    <Forks className="size-4 fill-current" />
+                                                    <div>{project.forks_count}</div>
+                                                </a>
+                                                <a
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    href={project.html_url + '/issues'}
+                                                    className="flex items-center gap-2"
+                                                    aria-label={t('projects.issues', { count: project.open_issues_count })}
+                                                >
+                                                    <Issues className="size-4 fill-current" />
+                                                    <div>{project.open_issues_count}</div>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        {project.homepage && (
+                                            <>
+                                                <a
+                                                    href={project.homepage}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    aria-hidden="true"
+                                                    tabIndex={-1}
+                                                    className="relative z-20 mx-auto flex justify-center text-sm font-medium text-zinc-500 transition group-hover:text-teal-700 dark:text-zinc-200 dark:hover:text-yellow-500"
+                                                >
+                                                    <HomepageLink className="size-5 flex-none" />
+                                                </a>
+                                                <a
+                                                    href={project.homepage}
+                                                    title={project.homepage}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="relative z-20 block truncate text-sm font-medium text-zinc-500 transition group-hover:text-teal-700 dark:text-zinc-200 dark:hover:text-yellow-500"
+                                                >
+                                                    {project.homepage}
+                                                </a>
+                                            </>
+                                        )}
+                                        <Link className="z-10 mx-auto size-6 flex-none" />
+                                        <span className="z-10 text-sm font-medium text-zinc-500 transition group-hover:text-teal-700 dark:text-zinc-200 dark:group-hover:text-yellow-500">
+                                            github.com
+                                        </span>
+
+                                        <DateCalendarUp className="z-10 m-auto size-5 flex-none" />
+                                        <time
+                                            className="z-10 text-xs text-zinc-500 transition group-hover:text-teal-700 dark:text-zinc-200"
+                                            dateTime={project.updated_at}
+                                        >
+                                            {formatDate(project.updated_at)}
+                                        </time>
+                                    </div>
+                                </div>
+                            ))}
+                        </InfiniteScroll>
+                    )}
+
+                    {hasNextPageFailed && (
+                        <StatusMessage className="mt-16 text-center">
+                            {t('status.projects.next-page-error')}{' '}
+                            <button
+                                type="button"
+                                className="cursor-pointer font-medium text-teal-700 underline hover:text-yellow-700 dark:text-teal-500 dark:hover:text-yellow-400"
+                                onClick={retryNextPage}
+                            >
+                                {t('status.projects.retry')}
+                            </button>
+                        </StatusMessage>
+                    )}
                 </div>
             </Container>
         </DefaultLayout>

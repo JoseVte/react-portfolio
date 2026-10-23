@@ -1,13 +1,15 @@
 import Container from '@/components/container';
 import LazyImg from '@/components/lazy-img';
 import Marquee from '@/components/marquee';
+import StatusMessage from '@/components/status-message';
 import { useAppearance } from '@/hooks/use-appearance';
+import { useFetch } from '@/hooks/use-fetch';
 import DefaultLayout from '@/layouts/default-layout';
 import { PlayroomGame, SteamInfo } from '@/types';
 import { nl2br } from '@/utils';
 import { Head } from '@inertiajs/react';
 import { Modal, ModalBody, ModalHeader } from 'flowbite-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Tooltip } from 'react-tooltip';
 
@@ -18,33 +20,11 @@ export default function More() {
     const title = t('layouts.more.title');
     const description = t('layouts.more.description');
 
-    const [steam, setSteam] = useState<SteamInfo>();
-    const [playroomGames, setPlayroomGames] = useState<PlayroomGame[]>([]);
+    const { data: steam, status: steamStatus } = useFetch<SteamInfo>(route('steam'));
+    const { data: playroomGames, status: playroomStatus } = useFetch<PlayroomGame[]>(route('playroom'));
 
     const [isShowModal, setIsShowModal] = useState(false);
     const [playroomGameModal, setPlayroomGameModal] = useState<PlayroomGame>();
-
-    useEffect(() => {
-        const controller = new AbortController();
-
-        fetch(route('steam'), { signal: controller.signal })
-            .then((response) => response.json())
-            .then((data: SteamInfo) => setSteam(data))
-            .catch(() => undefined);
-
-        return () => controller.abort();
-    }, []);
-
-    useEffect(() => {
-        const controller = new AbortController();
-
-        fetch(route('playroom'), { signal: controller.signal })
-            .then((response) => response.json())
-            .then((data: PlayroomGame[]) => setPlayroomGames(data))
-            .catch(() => undefined);
-
-        return () => controller.abort();
-    }, []);
 
     const openDetailGame = (game: PlayroomGame) => {
         setPlayroomGameModal(game);
@@ -78,13 +58,25 @@ export default function More() {
 
                     <div className="text-lg">{t('playroom.description')}</div>
 
-                    <div className="flex flex-wrap gap-4">
-                        {playroomGames.map((game) => (
-                            <div key={game.id} className="relative cursor-pointer rounded" onClick={() => openDetailGame(game)}>
-                                <LazyImg image={game.image_url} preImage={game.image_url} alt={game.name} className="size-32 rounded object-cover" />
-                            </div>
-                        ))}
-                    </div>
+                    {playroomStatus === 'loading' && <StatusMessage>{t('status.playroom.loading')}</StatusMessage>}
+                    {playroomStatus === 'error' && <StatusMessage>{t('status.playroom.error')}</StatusMessage>}
+                    {playroomStatus === 'success' && !playroomGames?.length && <StatusMessage>{t('status.playroom.empty')}</StatusMessage>}
+
+                    {!!playroomGames?.length && (
+                        <div className="flex flex-wrap gap-4">
+                            {playroomGames.map((game) => (
+                                <button
+                                    key={game.id}
+                                    type="button"
+                                    aria-label={game.name}
+                                    className="relative cursor-pointer rounded"
+                                    onClick={() => openDetailGame(game)}
+                                >
+                                    <LazyImg image={game.image_url} preImage={game.image_url} alt="" className="size-32 rounded object-cover" />
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
                     {playroomGameModal && (
                         <Modal dismissible show={isShowModal} onClose={closeModal}>
@@ -113,65 +105,83 @@ export default function More() {
 
                     <div className="text-lg">{t('steam.description')}</div>
 
-                    <h3 className="text-xl font-semibold text-zinc-700 sm:text-2xl dark:text-zinc-200">{t('recently-played')}</h3>
+                    {steamStatus === 'loading' && <StatusMessage>{t('status.steam.loading')}</StatusMessage>}
+                    {steamStatus === 'error' && <StatusMessage>{t('status.steam.error')}</StatusMessage>}
 
-                    <div className="grid grid-cols-3 gap-4">
-                        {steam?.recently_games?.map((game) => (
-                            <div key={game.steam_url} className="group relative rounded">
-                                <LazyImg image={game.style.image} preImage={game.style.capsule_image} alt={game.name} className="rounded" />
+                    {steamStatus === 'success' && (
+                        <>
+                            <h3 className="text-xl font-semibold text-zinc-700 sm:text-2xl dark:text-zinc-200">{t('recently-played')}</h3>
 
-                                <div className="absolute inset-0 hidden items-center justify-center rounded bg-[rgba(0,0,0,0.6)] group-hover:flex">
-                                    <a className="block w-full p-4" href={game.steam_url} target="_blank">
-                                        <Marquee speed={50} delay={5}>
-                                            <span className="px-4 text-sm sm:text-lg sm:font-semibold">{game.name}</span>
-                                        </Marquee>
+                            {!steam?.recently_games?.length && <StatusMessage>{t('status.steam.recently-empty')}</StatusMessage>}
 
-                                        <div className="hidden text-center text-xs md:block lg:text-base">
-                                            {t('played-2-weeks')}: {(game.time['2weeks'] / 60).toFixed(2)}h<br />
-                                            {t('played-total')}: {(game.time.total / 60).toFixed(2)}h
+                            <div className="grid grid-cols-3 gap-4">
+                                {steam?.recently_games?.map((game) => (
+                                    <a
+                                        key={game.steam_url}
+                                        className="group relative block rounded"
+                                        href={game.steam_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <LazyImg image={game.style.image} preImage={game.style.capsule_image} alt={game.name} className="rounded" />
+
+                                        <div className="absolute inset-0 hidden items-center justify-center rounded bg-[rgba(0,0,0,0.6)] group-hover:flex group-focus-visible:flex">
+                                            <div className="block w-full p-4 text-white" aria-hidden="true">
+                                                <Marquee speed={50} delay={5}>
+                                                    <span className="px-4 text-sm sm:text-lg sm:font-semibold">{game.name}</span>
+                                                </Marquee>
+
+                                                <div className="hidden text-center text-xs md:block lg:text-base">
+                                                    {t('played-2-weeks')}: {(game.time['2weeks'] / 60).toFixed(2)}h<br />
+                                                    {t('played-total')}: {(game.time.total / 60).toFixed(2)}h
+                                                </div>
+                                            </div>
                                         </div>
+
+                                        {game.achievements.total > 0 && (
+                                            <div className="absolute right-4 bottom-2 left-4 hidden h-1.5 rounded bg-gray-500 group-hover:block group-focus-visible:block">
+                                                <div
+                                                    className="h-full rounded"
+                                                    style={{
+                                                        backgroundColor: game.achievements.current >= game.achievements.total ? 'yellow' : 'orange',
+                                                        width: Math.min(100, (game.achievements.current / game.achievements.total) * 100) + '%',
+                                                    }}
+                                                ></div>
+                                            </div>
+                                        )}
                                     </a>
-                                </div>
-
-                                {game.achievements.total > 0 && (
-                                    <div className="absolute right-4 bottom-2 left-4 hidden h-1.5 rounded bg-gray-500 group-hover:block">
-                                        <div
-                                            className="h-full rounded"
-                                            style={{
-                                                backgroundColor: game.achievements.current >= game.achievements.total ? 'yellow' : 'orange',
-                                                width: Math.min(100, (game.achievements.current / game.achievements.total) * 100) + '%',
-                                            }}
-                                        ></div>
-                                    </div>
-                                )}
+                                ))}
                             </div>
-                        ))}
-                    </div>
 
-                    <h3 className="text-xl font-semibold text-zinc-700 sm:text-2xl dark:text-zinc-200">{t('owned-games')}</h3>
+                            <h3 className="text-xl font-semibold text-zinc-700 sm:text-2xl dark:text-zinc-200">{t('owned-games')}</h3>
 
-                    <div className="flex flex-wrap justify-between gap-4">
-                        {steam?.owned_games?.map((game) => (
-                            <a
-                                key={game.steam_url}
-                                data-tooltip-id="owned-game-tooltip"
-                                data-tooltip-content={game.name}
-                                data-tooltip-time-2weeks={(game.time['2weeks'] / 60).toFixed(2)}
-                                data-tooltip-time-total={(game.time.total / 60).toFixed(2)}
-                                className="block rounded"
-                                href={game.steam_url}
-                                target="_blank"
-                            >
-                                <LazyImg
-                                    className="rounded"
-                                    image={game.icon_url}
-                                    errorImage={game.default_icon_url}
-                                    preImage={game.default_icon_url}
-                                    alt={game.name}
-                                />
-                            </a>
-                        ))}
-                    </div>
+                            {!steam?.owned_games?.length && <StatusMessage>{t('status.steam.owned-empty')}</StatusMessage>}
+
+                            <div className="flex flex-wrap justify-between gap-4">
+                                {steam?.owned_games?.map((game) => (
+                                    <a
+                                        key={game.steam_url}
+                                        data-tooltip-id="owned-game-tooltip"
+                                        data-tooltip-content={game.name}
+                                        data-tooltip-time-2weeks={(game.time['2weeks'] / 60).toFixed(2)}
+                                        data-tooltip-time-total={(game.time.total / 60).toFixed(2)}
+                                        className="block rounded"
+                                        href={game.steam_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <LazyImg
+                                            className="rounded"
+                                            image={game.icon_url}
+                                            errorImage={game.default_icon_url}
+                                            preImage={game.default_icon_url}
+                                            alt={game.name}
+                                        />
+                                    </a>
+                                ))}
+                            </div>
+                        </>
+                    )}
                     <Tooltip
                         id="owned-game-tooltip"
                         render={({ content, activeAnchor }) => (
