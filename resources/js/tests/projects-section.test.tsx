@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import Projects from '../components/sections/projects';
 import i18n from '../i18n';
 
@@ -16,12 +16,22 @@ const respondWith = (response: Promise<Response>) =>
         vi.fn(() => response),
     );
 
+/**
+ * CI has no .env, so the profile address is pinned here instead of read from the machine.
+ */
+const GITHUB_PROFILE = 'https://github.com/example';
+
 beforeAll(async () => {
     await i18n.changeLanguage('en');
 });
 
 beforeEach(() => {
+    vi.stubEnv('VITE_PUBLIC_GITHUB', GITHUB_PROFILE);
     vi.stubGlobal('route', (name: string) => `/api/${name}`);
+});
+
+afterEach(() => {
+    vi.unstubAllEnvs();
 });
 
 describe('Projects section', () => {
@@ -39,7 +49,10 @@ describe('Projects section', () => {
         render(<Projects />);
 
         expect(await screen.findByText(/GitHub did not respond/)).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'See them on GitHub' })).toHaveAttribute('target', '_blank');
+        const githubLink = screen.getByRole('link', { name: 'See them on GitHub' });
+
+        expect(githubLink).toHaveAttribute('href', GITHUB_PROFILE);
+        expect(githubLink).toHaveAttribute('target', '_blank');
     });
 
     it('says there is nothing to show when GitHub returns no projects', async () => {

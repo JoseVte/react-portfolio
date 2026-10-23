@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { PropsWithChildren } from 'react';
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../i18n';
 import Projects from '../pages/projects';
 
@@ -36,12 +36,22 @@ const PROJECT = {
 const json = (body: unknown) => Promise.resolve(new Response(JSON.stringify(body)));
 const failure = () => Promise.resolve(new Response('', { status: 500 }));
 
+/**
+ * CI has no .env, so the profile address is pinned here instead of read from the machine.
+ */
+const GITHUB_PROFILE = 'https://github.com/example';
+
 beforeAll(async () => {
     await i18n.changeLanguage('en');
 });
 
 beforeEach(() => {
+    vi.stubEnv('VITE_PUBLIC_GITHUB', GITHUB_PROFILE);
     vi.stubGlobal('route', (name: string, params: Record<string, string> = {}) => `/api/${name}?page=${params.page ?? 1}`);
+});
+
+afterEach(() => {
+    vi.unstubAllEnvs();
 });
 
 describe('Projects page', () => {
@@ -51,7 +61,7 @@ describe('Projects page', () => {
         render(<Projects />);
 
         expect(await screen.findByText(/GitHub did not respond/)).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'See them on GitHub' })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'See them on GitHub' })).toHaveAttribute('href', GITHUB_PROFILE);
     });
 
     it('says there is nothing to show when GitHub returns no projects', async () => {
