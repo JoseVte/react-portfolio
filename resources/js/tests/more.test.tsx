@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { PropsWithChildren } from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../i18n';
@@ -97,5 +97,55 @@ describe('More page', () => {
 
         expect(link).toHaveAttribute('href', RECENT_GAME.steam_url);
         expect(link).toHaveAttribute('target', '_blank');
+    });
+
+    it('closes the board game details again', async () => {
+        stubApi({ steam: pending, playroom: json([GAME]) });
+
+        render(<More />);
+
+        fireEvent.click(await screen.findByRole('button', { name: GAME.name }));
+        expect(await screen.findByRole('dialog')).toBeInTheDocument();
+
+        fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Close' }));
+
+        await waitFor(() => expect(screen.queryByText(GAME.description_en)).not.toBeInTheDocument());
+    });
+
+    it('shows the board game category and description in the visitor language', async () => {
+        stubApi({ steam: pending, playroom: json([GAME]) });
+        await i18n.changeLanguage('es');
+
+        try {
+            render(<More />);
+
+            fireEvent.click(await screen.findByRole('button', { name: GAME.name }));
+
+            expect(await screen.findByText(GAME.description_es)).toBeInTheDocument();
+            expect(screen.getByText(GAME.category_es)).toBeInTheDocument();
+            expect(screen.queryByText(GAME.category_en)).not.toBeInTheDocument();
+        } finally {
+            await i18n.changeLanguage('en');
+        }
+    });
+
+    it('links every owned game to Steam with its playtime ready for the tooltip', async () => {
+        const owned = {
+            name: 'Portal 2',
+            steam_url: 'https://store.steampowered.com/app/620',
+            icon_url: '/portal.jpg',
+            default_icon_url: '/default.jpg',
+            time: { '2weeks': 90, total: 1500 },
+        };
+        stubApi({ steam: json({ recently_games: [], owned_games: [owned] }), playroom: json([]) });
+
+        render(<More />);
+
+        const link = await screen.findByRole('link', { name: owned.name });
+
+        expect(link).toHaveAttribute('href', owned.steam_url);
+        expect(link).toHaveAttribute('data-tooltip-time-2weeks', '1.50');
+        expect(link).toHaveAttribute('data-tooltip-time-total', '25.00');
+        expect(screen.queryByText('No games to show.')).not.toBeInTheDocument();
     });
 });

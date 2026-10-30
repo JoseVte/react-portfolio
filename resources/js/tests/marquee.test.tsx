@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { act, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import Marquee from '../components/marquee';
 
 const track = () => document.querySelector('[style*="animation-duration"]') as HTMLElement;
@@ -41,5 +41,49 @@ describe('Marquee', () => {
 
         expect(container.firstElementChild?.className).toContain('overflow-hidden');
         expect(container.firstElementChild?.className).toContain('w-10');
+    });
+
+    it('measures again when the track is resized, so a marquee revealed on hover starts moving', () => {
+        const observers: Array<() => void> = [];
+        const disconnect = vi.fn();
+        vi.stubGlobal(
+            'ResizeObserver',
+            class {
+                constructor(callback: () => void) {
+                    observers.push(callback);
+                }
+                observe() {}
+                disconnect = disconnect;
+            },
+        );
+        let width = 0;
+        vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockImplementation(() => width);
+
+        const { unmount } = render(<Marquee speed={50}>Portal 2</Marquee>);
+
+        expect(track().style.animationDuration).toBe('0s');
+
+        width = 400;
+        act(() => observers.forEach((callback) => callback()));
+
+        // The track holds the content twice, so one loop covers half of the 400px at 50px per second.
+        expect(track().style.animationDuration).toBe('4s');
+
+        width = 1000;
+        act(() => window.dispatchEvent(new Event('resize')));
+
+        expect(track().style.animationDuration).toBe('10s');
+
+        unmount();
+
+        expect(disconnect).toHaveBeenCalled();
+    });
+
+    it('never divides by a speed below one', () => {
+        vi.spyOn(HTMLElement.prototype, 'scrollWidth', 'get').mockReturnValue(100);
+
+        render(<Marquee speed={0}>Portal 2</Marquee>);
+
+        expect(track().style.animationDuration).toBe('50s');
     });
 });

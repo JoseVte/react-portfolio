@@ -3,6 +3,7 @@
 use App\Enums\ImageCategory;
 use App\Models\Image;
 use App\Models\PlayroomGame;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
@@ -228,5 +229,50 @@ describe('delete', function () {
         $this->delete(route('playroom.destroy', $game))->assertUnauthorized();
 
         expect(PlayroomGame::find($game->id))->not->toBeNull();
+    });
+});
+
+describe('failed saves', function () {
+    it('removes the uploaded file when the game cannot be created', function () {
+        Exceptions::fake();
+        PlayroomGame::creating(fn () => throw new RuntimeException('Database unavailable'));
+
+        $this->post(route('playroom.store'), [
+            'name' => 'Wingspan',
+            'category_en' => 'Strategy',
+            'category_es' => 'Estrategia',
+            'file' => fakeUpload('wingspan.png'),
+        ])->assertRedirect()->assertSessionHas('error', 'Error saving game');
+
+        expect(PlayroomGame::count())->toBe(0)
+            ->and(Image::count())->toBe(0)
+            ->and(Storage::allFiles())->toBeEmpty();
+        Exceptions::assertReported(RuntimeException::class);
+    });
+
+    it('removes the replacement file and keeps the previous image when the update fails', function () {
+        $game = PlayroomGame::factory()->create(['name' => 'Original']);
+        Storage::put($game->image->path, 'old contents');
+        $previousImage = $game->image;
+
+        Exceptions::fake();
+        PlayroomGame::updating(function (PlayroomGame $game): void {
+            if ($game->isDirty('image_id')) {
+                throw new RuntimeException('Database unavailable');
+            }
+        });
+
+        $this->post(route('playroom.update', $game), [
+            'name' => 'Renamed',
+            'category_en' => $game->category_en,
+            'category_es' => $game->category_es,
+            'file' => fakeUpload('replacement.png'),
+        ])->assertRedirect()->assertSessionHas('error', 'Error saving game');
+
+        expect($game->fresh())
+            ->name->toBe('Original')
+            ->image_id->toBe($previousImage->id)
+            ->and(Storage::allFiles())->toBe([$previousImage->path]);
+        Exceptions::assertReported(RuntimeException::class);
     });
 });

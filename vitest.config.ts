@@ -16,5 +16,11 @@ export default defineConfig({
         setupFiles: ['resources/js/tests/setup.ts'],
         include: ['resources/js/**/*.test.{ts,tsx}'],
         restoreMocks: true,
+        coverage: {
+            provider: 'v8',
+            include: ['resources/js/**/*.{ts,tsx}'],
+            exclude: ['resources/js/tests/**', 'resources/js/types/**', 'resources/js/**/*.d.ts', 'resources/js/app.tsx', 'resources/js/ssr.tsx'],
+            reporter: ['text', 'html'],
+        },
     },
 });

@@ -6,6 +6,7 @@ import ModeToggle from '@/components/mode-toggle';
 import { Appearance } from '@/hooks/use-appearance';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useScroll } from '@/hooks/use-scroll';
+import { supportedLanguages } from '@/i18n';
 import { Link, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import { Fade } from 'react-awesome-reveal';
@@ -57,7 +58,7 @@ export default function AppHeader({
     };
 
     const availableLocale = () => {
-        return i18n.languages.filter((lng) => lng !== i18n.language)[0];
+        return supportedLanguages.find((lng) => lng !== i18n.resolvedLanguage);
     };
 
     const isActive = (url: string | number): boolean => {

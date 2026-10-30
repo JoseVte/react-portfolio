@@ -66,6 +66,8 @@ const messages = {
 
             'cookie-consent.accept': 'Accept',
             'cookie-consent.decline': 'Decline',
+            'cookie-consent.accept-label': 'Accept cookies',
+            'cookie-consent.decline-label': 'Decline cookies',
             'cookie-consent.text': 'This website uses cookies to enhance the user experience.',
 
             'month.1': 'Jan',
@@ -107,6 +109,9 @@ const messages = {
             'played-total': 'Total',
 
             'button.change-appearance': 'Change appearance',
+            'appearance.light': 'Light',
+            'appearance.dark': 'Dark',
+            'appearance.system': 'System',
 
             'lazy-img.loading': 'Loading {{alt}}...',
             'lazy-img.error': 'Error loading image',
@@ -189,6 +194,8 @@ const messages = {
 
             'cookie-consent.accept': 'Aceptar',
             'cookie-consent.decline': 'Declinar',
+            'cookie-consent.accept-label': 'Aceptar cookies',
+            'cookie-consent.decline-label': 'Declinar cookies',
             'cookie-consent.text': 'Este sitio usa cookies para mejorar la experiencia de usuario.',
 
             'month.1': 'Ene',
@@ -230,6 +237,9 @@ const messages = {
             'played-total': 'Total',
 
             'button.change-appearance': 'Cambiar apariencia',
+            'appearance.light': 'Claro',
+            'appearance.dark': 'Oscuro',
+            'appearance.system': 'Sistema',
 
             'lazy-img.loading': 'Cargando {{alt}}...',
             'lazy-img.error': 'Error al cargar la imagen',
@@ -251,12 +261,14 @@ const messages = {
     },
 };
 
+export const supportedLanguages = ['en', 'es'];
+
 i18next
     .use(initReactI18next)
     .use(LanguageDetector)
     .init({
         resources: messages,
-        supportedLngs: ['en', 'es'],
+        supportedLngs: supportedLanguages,
         nonExplicitSupportedLngs: true,
         fallbackLng: 'en',
         interpolation: {

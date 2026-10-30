@@ -181,6 +181,8 @@ export default function DefaultLayout({
                     declineButtonClasses="!rounded"
                     declineButtonText={t('cookie-consent.decline')}
                     buttonText={t('cookie-consent.accept')}
+                    ariaDeclineLabel={t('cookie-consent.decline-label')}
+                    ariaAcceptLabel={t('cookie-consent.accept-label')}
                     onAccept={handleAcceptCookie}
                     onDecline={handleDeclineCookie}
                 >

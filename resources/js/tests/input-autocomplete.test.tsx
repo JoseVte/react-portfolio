@@ -5,11 +5,11 @@ import InputAutocomplete, { type Props } from '../components/input-autocomplete'
 const CATEGORIES = ['Strategy', 'Storytelling', 'Party'];
 
 const renderInput = (props: Partial<Omit<Props, 'ref'>> = {}) => {
-    const onChange = vi.fn();
+    const onValueChange = vi.fn();
 
-    render(<InputAutocomplete autocompleteValues={CATEGORIES} onChange={onChange} {...props} />);
+    render(<InputAutocomplete autocompleteValues={CATEGORIES} onValueChange={onValueChange} {...props} />);
 
-    return { input: screen.getByRole('textbox') as HTMLInputElement, onChange };
+    return { input: screen.getByRole('textbox') as HTMLInputElement, onValueChange };
 };
 
 describe('InputAutocomplete', () => {
@@ -34,12 +34,11 @@ describe('InputAutocomplete', () => {
     });
 
     it('reports the completed value to the caller', () => {
-        const { input, onChange } = renderInput();
+        const { input, onValueChange } = renderInput();
 
         fireEvent.change(input, { target: { value: 'Par' } });
 
-        expect(onChange).toHaveBeenCalled();
-        expect(onChange.mock.calls.at(-1)?.[0].currentTarget.value).toBe('Party');
+        expect(onValueChange).toHaveBeenLastCalledWith('Party');
     });
 
     it('selects the completed part so typing replaces it', () => {

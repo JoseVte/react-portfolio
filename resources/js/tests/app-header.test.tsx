@@ -77,4 +77,15 @@ describe('AppHeader mobile menu', () => {
         expect(currentLinks.length).toBeGreaterThan(0);
         currentLinks.forEach((link) => expect(link).toHaveAttribute('href', '/about'));
     });
+
+    it('closes from its close button and returns focus to the menu button', () => {
+        renderHeader();
+
+        const menuButton = openMenu();
+        fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+        expect(menuButton).toHaveFocus();
+    });
 });

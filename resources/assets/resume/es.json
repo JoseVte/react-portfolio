@@ -2,51 +2,75 @@
     "$schema": "https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json",
     "basics": {
         "name": "Jose Vicente Orts Romero",
-        "label": "Full-Stack Developer",
+        "label": "Ingeniero Informático",
         "image": "",
         "email": "jvortsromero@gmail.com",
         "phone": "",
-        "url": "",
-        "summary": "",
+        "url": "https://app.josrom.io/",
+        "summary": "Desarrollador web con una extensa experiencia en el diseño, desarrollo y despliegue de aplicaciones web. Me considero una persona activa, que se adapta rápido a cualquier situación dentro del ámbito de la resolución de problemas. En mi tiempo libre me gusta aprender nuevos lenguajes de manera autodidacta, para mantenerme actualizado a las tecnologías actuales.",
         "location": {
             "countryCode": "ES",
-            "address": ""
+            "city": "Alicante",
+            "region": "Comunidad Valenciana"
         },
         "profiles": [
             {
                 "network": "LinkedIn",
                 "username": "jose-vicente-orts-romero-93aa9990",
                 "url": "https://www.linkedin.com/in/jose-vicente-orts-romero-93aa9990/"
+            },
+            {
+                "network": "GitHub",
+                "username": "JoseVte",
+                "url": "https://github.com/JoseVte"
             }
         ]
     },
     "work": [
         {
             "name": "Square1",
-            "position": "Ingeniero de software superior",
-            "startDate": "2023-05-31",
-            "endDate": "",
-            "highlights": [],
+            "position": "Programador full stack senior",
+            "startDate": "2023-05-01",
+            "endDate": "2026-09-30",
+            "summary": "Backend: PHP 7.0 a 8.0 con Laravel y WordPress. Frontend: Vue y Tailwind.",
+            "highlights": [
+                "Diseño y mantenimiento de APIs",
+                "Desarrollo de nuevas funcionalidades en aplicaciones web en Laravel",
+                "Desarrollo de nuevas funcionalidades y plugins para WordPress",
+                "Mantenimiento y migración de versiones"
+            ],
             "url": "https://www.linkedin.com/company/square1-ltd/",
-            "location": "Alicante, Comunidad Valenciana / Comunitat Valenciana, España"
+            "location": "Alicante, Comunidad Valenciana, España"
         },
         {
             "name": "Square1",
-            "position": "Ingeniero de software",
-            "startDate": "2019-01-31",
+            "position": "Programador full stack mid",
+            "startDate": "2019-01-01",
             "endDate": "2023-04-30",
-            "highlights": [],
+            "summary": "Backend: PHP 5.6 a 8.0 con Laravel y WordPress. Frontend: Vue, Tailwind y Bootstrap 3 a 4.",
+            "highlights": [
+                "Diseño y mantenimiento de APIs",
+                "Desarrollo de nuevas funcionalidades en aplicaciones web en Laravel",
+                "Desarrollo de nuevas funcionalidades y plugins para WordPress",
+                "Mantenimiento y migración de versiones"
+            ],
             "url": "https://www.linkedin.com/company/square1-ltd/",
-            "location": "Alicante, Comunidad Valenciana / Comunitat Valenciana, España"
+            "location": "Alicante, Comunidad Valenciana, España"
         },
         {
             "name": "Square1",
-            "position": "Ingeniero de software júnior",
+            "position": "Programador full stack júnior",
             "startDate": "2016-01-31",
             "endDate": "2018-12-31",
-            "highlights": [],
+            "summary": "Backend: PHP 5.6 a 7.0 con Laravel y WordPress. Frontend: JavaScript y Bootstrap 3 a 4.",
+            "highlights": [
+                "Diseño y mantenimiento de APIs",
+                "Desarrollo de nuevas funcionalidades en aplicaciones web en Laravel",
+                "Desarrollo de nuevas funcionalidades y plugins para WordPress",
+                "Mantenimiento y migración de versiones"
+            ],
             "url": "https://www.linkedin.com/company/square1-ltd/",
-            "location": "Alicante, Comunidad Valenciana / Comunitat Valenciana, España"
+            "location": "Alicante, Comunidad Valenciana, España"
         },
         {
             "name": "Square1",
@@ -55,15 +79,15 @@
             "endDate": "2015-12-31",
             "highlights": [],
             "url": "https://www.linkedin.com/company/square1-ltd/",
-            "location": "Alicante, Comunidad Valenciana / Comunitat Valenciana, España"
+            "location": "Alicante, Comunidad Valenciana, España"
         }
     ],
     "volunteer": [],
     "education": [
         {
             "institution": "Universitat d'Alacant",
-            "area": "Ingeniería informática",
-            "studyType": "Grado en Ingeniería",
+            "area": "Ingeniería Informática",
+            "studyType": "Grado",
             "startDate": "2011-12-31",
             "endDate": "2016-12-31",
             "score": "",
@@ -83,112 +107,93 @@
     "publications": [],
     "skills": [
         {
-            "name": "MySQL",
-            "level": "",
-            "keywords": []
-        },
-        {
-            "name": "CSS",
-            "level": "",
-            "keywords": []
-        },
-        {
-            "name": "SQL",
-            "level": "",
-            "keywords": []
-        },
-        {
-            "name": "Desarrollo web",
-            "level": "",
-            "keywords": []
-        },
-        {
-            "name": "jQuery",
-            "level": "",
+            "name": "PHP",
+            "level": "10 años",
             "keywords": []
         },
         {
             "name": "JavaScript",
-            "level": "",
+            "level": "10 años",
             "keywords": []
         },
         {
-            "name": "Microsoft Windows",
-            "level": "",
-            "keywords": []
-        },
-        {
-            "name": "HTML5",
-            "level": "",
-            "keywords": []
-        },
-        {
-            "name": "Java",
-            "level": "",
-            "keywords": []
-        },
-        {
-            "name": "Hojas de estilos en cascada (CSS)",
-            "level": "",
-            "keywords": []
-        },
-        {
-            "name": "PHP",
-            "level": "",
-            "keywords": []
-        },
-        {
-            "name": "C++",
-            "level": "",
-            "keywords": []
-        },
-        {
-            "name": "Laravel",
-            "level": "",
+            "name": "CSS",
+            "level": "10 años",
             "keywords": []
         },
         {
             "name": "HTML",
-            "level": "",
+            "level": "10 años",
             "keywords": []
         },
         {
-            "name": "Linux",
-            "level": "",
+            "name": "MySQL",
+            "level": "10 años",
+            "keywords": []
+        },
+        {
+            "name": "Java",
+            "level": "Autodidacta",
+            "keywords": []
+        },
+        {
+            "name": "Laravel",
+            "level": "10 años",
+            "keywords": []
+        },
+        {
+            "name": "WordPress",
+            "level": "10 años",
+            "keywords": []
+        },
+        {
+            "name": "TailwindCSS",
+            "level": "5 años",
+            "keywords": []
+        },
+        {
+            "name": "Bootstrap",
+            "level": "5 años",
+            "keywords": []
+        },
+        {
+            "name": "Vue",
+            "level": "5 años",
+            "keywords": []
+        },
+        {
+            "name": "React",
+            "level": "Autodidacta",
             "keywords": []
         },
         {
             "name": "Git",
-            "level": "",
+            "level": "10 años",
             "keywords": []
         },
         {
-            "name": "PHPUnit",
-            "level": "",
+            "name": "Servidores Linux",
+            "level": "10 años",
             "keywords": []
         },
         {
-            "name": "Square1",
-            "level": "",
+            "name": "Docker",
+            "level": "5 años",
             "keywords": []
         }
     ],
     "languages": [
         {
-            "language": "es",
-            "fluency": "Native Speaker"
+            "language": "Castellano",
+            "fluency": "Nativo"
         },
         {
-            "fluency": "Professional Working",
-            "language": "Catalán"
+            "language": "Valenciano",
+            "fluency": "Nativo"
         },
         {
-            "fluency": "Native Speaker",
-            "language": "Español"
-        },
-        {
-            "fluency": "Professional Working",
-            "language": "Inglés"
+            "language": "Inglés",
+            "fluency": "B2"
         }
     ],
     "interests": [],

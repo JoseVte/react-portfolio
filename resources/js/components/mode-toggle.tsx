@@ -22,14 +22,22 @@ export default function ModeToggle({ appearance, updateAppearance }: { appearanc
 
     return (
         <div className="flex cursor-pointer items-center rounded-full bg-white/90 px-3 py-2 shadow-lg ring-1 shadow-zinc-800/5 ring-zinc-900/5 backdrop-blur transition dark:bg-zinc-800/90 dark:ring-white/10 dark:hover:ring-white/20">
-            <Dropdown label={getCurrentIcon()} inline aria-label={t('button.change-appearance')}>
-                <DropdownItem className="group" onClick={() => updateAppearance('light')}>
+            <Dropdown
+                label={
+                    <>
+                        {getCurrentIcon()}
+                        <span className="sr-only">{t('button.change-appearance')}</span>
+                    </>
+                }
+                inline
+            >
+                <DropdownItem className="group" aria-label={t('appearance.light')} onClick={() => updateAppearance('light')}>
                     <Sun className={iconClass + ' ' + (appearance === 'light' ? 'stroke-yellow-500' : 'stroke-zinc-500')} />
                 </DropdownItem>
-                <DropdownItem className="group" onClick={() => updateAppearance('dark')}>
+                <DropdownItem className="group" aria-label={t('appearance.dark')} onClick={() => updateAppearance('dark')}>
                     <Moon className={iconClass + ' ' + (appearance === 'dark' ? 'stroke-yellow-500' : 'stroke-zinc-500')} />
                 </DropdownItem>
-                <DropdownItem className="group" onClick={() => updateAppearance('system')}>
+                <DropdownItem className="group" aria-label={t('appearance.system')} onClick={() => updateAppearance('system')}>
                     <Monitor className={iconClass + ' ' + (appearance === 'system' ? 'stroke-yellow-500' : 'stroke-zinc-500')} />
                 </DropdownItem>
             </Dropdown>

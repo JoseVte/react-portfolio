@@ -1,87 +1,43 @@
-import { TextInput } from 'flowbite-react';
-import * as React from 'react';
+import { TextInput, TextInputProps } from 'flowbite-react';
+import { ChangeEvent, useRef, useState } from 'react';
 
-export interface Props extends React.HTMLProps<HTMLInputElement> {
+export interface Props extends Omit<TextInputProps, 'value' | 'defaultValue' | 'onChange'> {
+    value?: string;
+    defaultValue?: string;
+    onValueChange?: (value: string) => void;
     autocompleteValues: string[];
 }
 
-const update = (written: string, completed: string) => {
-    return (): State => {
-        return {
-            written: written,
-            completed: completed,
-        };
-    };
-};
+/**
+ * A text input that completes what is typed with the first known value starting with it, and selects the completed
+ * part so the next keystroke replaces it. It reports the resulting value, not the event, because the completion is
+ * not what the visitor typed.
+ */
+export default function InputAutocomplete({ value, defaultValue = '', onValueChange, autocompleteValues, ...props }: Props) {
+    const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
+    const isControlled = value !== undefined;
+    const written = useRef(isControlled ? value : defaultValue);
 
-export interface State {
-    written: string;
-    completed: string;
-}
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const input = event.currentTarget;
+        const typed = input.value;
+        const isTypingForward = typed.length > written.current.length;
+        const match = isTypingForward ? autocompleteValues.find((autocompleteValue) => autocompleteValue.startsWith(typed)) : undefined;
 
-export class InputAutocomplete extends React.Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-
-        this.state = {
-            written: (props.value && String(props.value)) || (props.defaultValue && String(props.defaultValue)) || '',
-            completed: '',
-        };
-
-        this.handleOnChange = this.handleOnChange.bind(this);
-    }
-
-    fireOnChange(ev: React.ChangeEvent<HTMLInputElement>, changedValue?: string) {
-        if (!this.props.onChange) {
-            return;
-        }
-
-        if (!changedValue) {
-            this.props.onChange(ev);
-            return;
-        }
-
-        const newEvent: React.ChangeEvent<HTMLInputElement> = {
-            ...ev,
-            currentTarget: {
-                ...ev.currentTarget,
-                value: changedValue,
-            },
-        };
-
-        this.props.onChange(newEvent);
-    }
-
-    handleOnChange(ev: React.ChangeEvent<HTMLInputElement>) {
-        const target = ev.currentTarget;
-        const value = target.value;
-        const performMatch = value.length > this.state.written.length;
-
-        if (!performMatch) {
-            this.fireOnChange(ev);
-            this.setState(update(value, ''));
-            return;
-        }
-
-        const match = this.props.autocompleteValues?.find((autocompleteValue) => autocompleteValue.indexOf(value) == 0);
+        written.current = typed;
 
         if (match) {
-            this.setState(update(value, match.replace(value, '')), () => {
-                target.focus();
-                target.setSelectionRange(value.length, match.length);
-            });
-        } else {
-            this.setState(update(value, ''));
+            // Done before React re-renders, so it finds the value in place and keeps the selection.
+            input.value = match;
+            input.setSelectionRange(typed.length, match.length);
         }
 
-        this.fireOnChange(ev, match);
-    }
+        if (!isControlled) {
+            setUncontrolledValue(input.value);
+        }
 
-    render() {
-        const { ...props } = this.props;
+        onValueChange?.(input.value);
+    };
 
-        return <TextInput {...props} value={props.value || `${this.state.written}${this.state.completed}`} onChange={this.handleOnChange} />;
-    }
+    return <TextInput {...props} value={isControlled ? value : uncontrolledValue} onChange={handleChange} />;
 }
-
-export default InputAutocomplete;

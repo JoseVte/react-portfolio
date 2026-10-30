@@ -112,7 +112,7 @@ export default function AttachGameModal({ categoriesEn, categoriesEs, onUploaded
                         </div>
                         <InputAutocomplete
                             value={data.category_en}
-                            onChange={(e) => setData('category_en', e.target.value)}
+                            onValueChange={(value) => setData('category_en', value)}
                             autocompleteValues={categoriesEn}
                         />
                         <InputError message={errors.category_en} className="mt-2" />
@@ -129,7 +129,7 @@ export default function AttachGameModal({ categoriesEn, categoriesEs, onUploaded
                         </div>
                         <InputAutocomplete
                             value={data.category_es}
-                            onChange={(e) => setData('category_es', e.target.value)}
+                            onValueChange={(value) => setData('category_es', value)}
                             autocompleteValues={categoriesEs}
                         />
                         <InputError message={errors.category_es} className="mt-2" />
