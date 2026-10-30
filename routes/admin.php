@@ -5,8 +5,11 @@ use App\Http\Controllers\Admin\AssetController;
 use App\Http\Controllers\Admin\PlayroomController;
 use App\Http\Middleware\IpMiddleware;
 use Illuminate\Support\Str;
+use Spatie\Health\Http\Controllers\HealthCheckResultsController;
 
 Route::inertia('admin', 'admin')->name('admin');
+
+Route::get('admin/health', HealthCheckResultsController::class)->name('admin.health');
 
 Route::prefix('api')->group(function () {
     Route::prefix('assets')->name('assets.')->group(function () {
