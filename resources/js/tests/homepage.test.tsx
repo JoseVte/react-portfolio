@@ -129,6 +129,8 @@ describe('Homepage', () => {
 
     it('speaks spanish when the visitor does', async () => {
         stubPhotos({});
+        // Without an href the anchor has no link role, and CI has no .env.
+        vi.stubEnv('VITE_PUBLIC_GITHUB', 'https://github.com/example');
         await i18n.changeLanguage('es');
 
         render(<Homepage />);
